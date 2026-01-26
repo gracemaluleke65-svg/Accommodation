@@ -1,0 +1,562 @@
+{% extends "base.html" %}
+
+{% block title %}Booking #{{ booking.id }} - UniStay{% endblock %}
+
+{% block page_css %}
+<style>
+  /* BOOKING DETAIL PAGE STYLES */
+  
+  .booking-header {
+    background: linear-gradient(135deg, rgba(255, 111, 0, 0.1) 0%, rgba(255, 160, 64, 0.05) 100%);
+    border-radius: 15px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .booking-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 6px;
+    height: 100%;
+    background: linear-gradient(180deg, var(--primary) 0%, var(--primary-light) 100%);
+  }
+  
+  .booking-id {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .booking-details-card {
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--gray-light);
+  }
+  
+  .detail-row {
+    padding: 1.25rem 0;
+    border-bottom: 1px solid var(--gray-light);
+    transition: all 0.3s ease;
+  }
+  
+  .detail-row:last-child {
+    border-bottom: none;
+  }
+  
+  .detail-row:hover {
+    background: rgba(255, 111, 0, 0.02);
+    padding-left: 1rem;
+    padding-right: 1rem;
+    margin-left: -1rem;
+    margin-right: -1rem;
+    border-radius: 8px;
+  }
+  
+  .detail-label {
+    font-weight: 600;
+    color: var(--secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .detail-label i {
+    color: var(--primary);
+    width: 20px;
+    text-align: center;
+  }
+  
+  .detail-value {
+    color: var(--dark);
+    font-weight: 500;
+  }
+  
+  .status-badge {
+    padding: 0.5rem 1.25rem;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .status-paid {
+    background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+    color: white;
+  }
+  
+  .status-approved {
+    background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
+    color: white;
+  }
+  
+  .status-pending {
+    background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
+    color: white;
+  }
+  
+  .status-cancelled {
+    background: linear-gradient(135deg, #6B7280 0%, #9CA3AF 100%);
+    color: white;
+  }
+  
+  .price-display {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 1.75rem;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+    display: inline-block;
+  }
+  
+  .price-display::before {
+    content: 'ZAR';
+    position: absolute;
+    top: -10px;
+    left: 0;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--gray-medium);
+  }
+  
+  .accommodation-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--gray-light);
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+  
+  .accommodation-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    color: inherit;
+  }
+  
+  .accommodation-image {
+    height: 180px;
+    width: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+  
+  .accommodation-card:hover .accommodation-image {
+    transform: scale(1.05);
+  }
+  
+  .action-buttons {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  
+  .btn-pay-now {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .btn-pay-now:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(255, 111, 0, 0.3);
+    color: white;
+  }
+  
+  .btn-pay-now::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.5);
+    opacity: 0;
+    border-radius: 100%;
+    transform: scale(1, 1) translate(-50%);
+    transform-origin: 50% 50%;
+  }
+  
+  .btn-pay-now:focus:not(:active)::after {
+    animation: ripple 1s ease-out;
+  }
+  
+  @keyframes ripple {
+    0% {
+      transform: scale(0, 0);
+      opacity: 0.5;
+    }
+    100% {
+      transform: scale(20, 20);
+      opacity: 0;
+    }
+  }
+  
+  .btn-outline-secondary {
+    border: 2px solid var(--gray-medium);
+    color: var(--secondary);
+    padding: 0.75rem 2rem;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+  
+  .btn-outline-secondary:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: transparent;
+  }
+  
+  .timeline {
+    position: relative;
+    padding-left: 2rem;
+    margin: 2rem 0;
+  }
+  
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, var(--primary-light) 0%, var(--primary) 100%);
+    border-radius: 3px;
+  }
+  
+  .timeline-item {
+    position: relative;
+    margin-bottom: 1.5rem;
+  }
+  
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -2.2rem;
+    top: 0;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--primary);
+    border: 3px solid white;
+    box-shadow: 0 0 0 3px var(--primary-light);
+  }
+  
+  .timeline-date {
+    font-size: 0.85rem;
+    color: var(--gray-medium);
+    margin-bottom: 0.25rem;
+  }
+  
+  .timeline-content {
+    background: white;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--gray-light);
+  }
+  
+  @media (max-width: 768px) {
+    .booking-header {
+      padding: 1.5rem;
+    }
+    
+    .booking-details-card {
+      padding: 1.5rem;
+    }
+    
+    .action-buttons {
+      flex-direction: column;
+    }
+    
+    .action-buttons .btn {
+      width: 100%;
+      text-align: center;
+    }
+    
+    .price-display {
+      font-size: 1.5rem;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <!-- Booking Header -->
+  <div class="booking-header">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h1 class="booking-id mb-3">Booking #{{ booking.id }}</h1>
+        <p class="lead mb-0 text-secondary">
+          <i class="fas fa-calendar-check me-2 text-primary"></i>
+          Details of your accommodation booking
+        </p>
+      </div>
+      <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <span class="status-badge status-{{ booking.status }}">
+          {% if booking.status == 'paid' %}
+            <i class="fas fa-check-circle"></i>
+          {% elif booking.status == 'approved' %}
+            <i class="fas fa-clock"></i>
+          {% elif booking.status == 'pending' %}
+            <i class="fas fa-hourglass-half"></i>
+          {% else %}
+            <i class="fas fa-times-circle"></i>
+          {% endif %}
+          {{ booking.status|title }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Main Booking Details -->
+    <div class="col-lg-8">
+      <div class="booking-details-card mb-4">
+        <h3 class="mb-4">
+          <i class="fas fa-receipt me-2 text-primary"></i>
+          Booking Information
+        </h3>
+        
+        <div class="row">
+          <div class="col-md-6">
+            <div class="detail-row">
+              <div class="detail-label">
+                <i class="fas fa-hashtag"></i>
+                Booking ID
+              </div>
+              <div class="detail-value">#{{ booking.id }}</div>
+            </div>
+          </div>
+          
+          <div class="col-md-6">
+            <div class="detail-row">
+              <div class="detail-label">
+                <i class="fas fa-calendar-alt"></i>
+                Booking Date
+              </div>
+              <div class="detail-value">{{ booking.created_at.strftime('%d %B %Y') }}</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="detail-row">
+          <div class="detail-label">
+            <i class="fas fa-home"></i>
+            Accommodation
+          </div>
+          <div class="detail-value">{{ booking.accommodation.title }}</div>
+        </div>
+        
+        <div class="detail-row">
+          <div class="detail-label">
+            <i class="fas fa-map-marker-alt"></i>
+            Location
+          </div>
+          <div class="detail-value">{{ booking.accommodation.location }}</div>
+        </div>
+        
+        <div class="detail-row">
+          <div class="detail-label">
+            <i class="fas fa-clock"></i>
+            Duration
+          </div>
+          <div class="detail-value">
+            {{ booking.duration|title }}
+            {% if booking.period %}
+              <span class="text-primary">• {{ booking.period }}</span>
+            {% endif %}
+          </div>
+        </div>
+        
+        <div class="detail-row">
+          <div class="detail-label">
+            <i class="fas fa-hand-holding-usd"></i>
+            Payment Responsible
+          </div>
+          <div class="detail-value">{{ booking.payment_responsible|title }}</div>
+        </div>
+        
+        <div class="detail-row">
+          <div class="detail-label">
+            <i class="fas fa-tag"></i>
+            Total Amount
+          </div>
+          <div class="detail-value">
+            <span class="price-display">R{{ "%.2f"|format(booking.total_price) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Timeline -->
+      <div class="booking-details-card">
+        <h3 class="mb-4">
+          <i class="fas fa-history me-2 text-primary"></i>
+          Booking Timeline
+        </h3>
+        
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-date">{{ booking.created_at.strftime('%d %B %Y, %I:%M %p') }}</div>
+            <div class="timeline-content">
+              <strong>Booking Created</strong>
+              <p class="mb-0 text-secondary">Booking was submitted successfully</p>
+            </div>
+          </div>
+          
+          {% if booking.status == 'approved' %}
+          <div class="timeline-item">
+            <div class="timeline-date">{{ booking.created_at.strftime('%d %B %Y') }}</div>
+            <div class="timeline-content">
+              <strong>Booking Approved</strong>
+              <p class="mb-0 text-secondary">Ready for payment processing</p>
+            </div>
+          </div>
+          {% endif %}
+          
+          {% if booking.status == 'paid' %}
+          <div class="timeline-item">
+            <div class="timeline-date">{{ booking.updated_at.strftime('%d %B %Y') }}</div>
+            <div class="timeline-content">
+              <strong>Payment Completed</strong>
+              <p class="mb-0 text-success">Payment successfully processed</p>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar - Actions & Accommodation Preview -->
+    <div class="col-lg-4">
+      <!-- Accommodation Preview -->
+      <a href="{{ url_for('main.accommodation_detail', id=booking.accommodation.id) }}" class="accommodation-card mb-4">
+        {% if booking.accommodation.images and booking.accommodation.images|length > 0 %}
+          <img src="{{ url_for('static', filename=booking.accommodation.images[0]) }}" 
+               alt="{{ booking.accommodation.title }}" class="accommodation-image">
+        {% else %}
+          <img src="{{ url_for('static', filename='images/default_accommodation.jpg') }}" 
+               alt="Default accommodation" class="accommodation-image">
+        {% endif %}
+        <div class="p-3">
+          <h5 class="mb-2">{{ booking.accommodation.title }}</h5>
+          <p class="text-secondary mb-2">
+            <i class="fas fa-map-marker-alt me-1 text-primary"></i>
+            {{ booking.accommodation.location }}
+          </p>
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="badge bg-primary">{{ booking.accommodation.room_type|title }}</span>
+            <span class="text-primary fw-bold">R{{ booking.accommodation.price_per_month }}/month</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Action Buttons -->
+      <div class="booking-details-card">
+        <h4 class="mb-4">
+          <i class="fas fa-cogs me-2 text-primary"></i>
+          Quick Actions
+        </h4>
+        
+        <div class="action-buttons mb-4">
+          {% if booking.status == 'approved' %}
+            <a href="{{ url_for('bookings.payment', booking_id=booking.id) }}" class="btn-pay-now">
+              <i class="fas fa-credit-card me-2"></i>
+              Pay Now
+            </a>
+          {% endif %}
+          <a href="{{ url_for('bookings.my_bookings') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>
+            Back to My Bookings
+          </a>
+        </div>
+
+        <!-- Status Information -->
+        <div class="p-3 rounded-3" style="background: linear-gradient(135deg, rgba(248, 249, 250, 1) 0%, rgba(241, 245, 249, 1) 100%);">
+          <h6 class="mb-3">
+            <i class="fas fa-info-circle me-2 text-primary"></i>
+            Status Information
+          </h6>
+          {% if booking.status == 'approved' %}
+            <p class="mb-0 text-secondary">
+              Your booking has been approved. Please complete the payment to confirm your accommodation.
+            </p>
+          {% elif booking.status == 'pending' %}
+            <p class="mb-0 text-secondary">
+              Your booking is pending approval. You'll be notified once it's reviewed.
+            </p>
+          {% elif booking.status == 'paid' %}
+            <p class="mb-0 text-success">
+              <i class="fas fa-check-circle me-1"></i>
+              Payment completed. Your accommodation is confirmed!
+            </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Add animation to timeline items
+    const timelineItems = document.querySelectorAll('.timeline-item');
+    timelineItems.forEach((item, index) => {
+      item.style.opacity = '0';
+      item.style.transform = 'translateX(-20px)';
+      
+      setTimeout(() => {
+        item.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        item.style.opacity = '1';
+        item.style.transform = 'translateX(0)';
+      }, index * 200);
+    });
+    
+    // Add ripple effect to pay button
+    const payButton = document.querySelector('.btn-pay-now');
+    if (payButton) {
+      payButton.addEventListener('click', function(e) {
+        // Add click animation
+        this.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+          this.style.transform = '';
+        }, 150);
+      });
+    }
+    
+    // Smooth scroll for accommodation card
+    const accommodationCard = document.querySelector('.accommodation-card');
+    if (accommodationCard) {
+      accommodationCard.addEventListener('mouseenter', function() {
+        const img = this.querySelector('.accommodation-image');
+        if (img) {
+          img.style.transition = 'transform 0.3s ease';
+        }
+      });
+    }
+  });
+</script>
+{% endblock %}

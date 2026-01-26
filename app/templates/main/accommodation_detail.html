@@ -1,0 +1,656 @@
+{% extends "base.html" %}
+
+{% block title %}{{ accommodation.title }} - UniStay{% endblock %}
+
+{% block page_css %}
+<style>
+  /* ACCOMMODATION DETAIL PAGE SPECIFIC STYLES */
+  
+  /* Hero Image Carousel */
+  .hero-carousel {
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+    height: 500px;
+  }
+  
+  .carousel-item {
+    height: 500px;
+  }
+  
+  .carousel-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+  
+  .carousel-item:hover img {
+    transform: scale(1.02);
+  }
+  
+  .carousel-control-prev,
+  .carousel-control-next {
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 111, 0, 0.9);
+    border-radius: 50%;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0;
+    transition: all 0.3s ease;
+  }
+  
+  .hero-carousel:hover .carousel-control-prev,
+  .hero-carousel:hover .carousel-control-next {
+    opacity: 1;
+  }
+  
+  /* Accommodation Title */
+  .accommodation-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #FF6F00 0%, #FFA040 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+  
+  /* Location Pin */
+  .location-pin {
+    color: var(--primary);
+    font-size: 1.1rem;
+  }
+  
+  /* Price Display */
+  .price-display {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--dark);
+    position: relative;
+    display: inline-block;
+    padding-bottom: 10px;
+  }
+  
+  .price-display::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(135deg, #FF6F00 0%, #FFA040 100%);
+    border-radius: 3px;
+  }
+  
+  /* Status Badge */
+  .status-badge {
+    padding: 0.5rem 1.5rem;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+  }
+  
+  /* Description Box */
+  .description-box {
+    background: linear-gradient(135deg, #FFFFFF 0%, #F8F9FA 100%);
+    border-radius: 15px;
+    padding: 2rem;
+    border-left: 4px solid var(--primary);
+  }
+  
+  /* Amenities Grid */
+  .amenities-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  
+  .amenity-item {
+    background: white;
+    border-radius: 12px;
+    padding: 1.2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  }
+  
+  .amenity-item:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary);
+    box-shadow: 0 8px 25px rgba(255, 111, 0, 0.1);
+  }
+  
+  .amenity-icon {
+    font-size: 1.8rem;
+    color: var(--primary);
+    margin-bottom: 0.8rem;
+  }
+  
+  /* Quick Actions Card */
+  .quick-actions-card {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    border: 2px solid var(--gray-light);
+    position: sticky;
+    top: 100px;
+  }
+  
+  .action-btn {
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    width: 100%;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  
+  .book-btn {
+    background: linear-gradient(135deg, #FF6F00 0%, #FFA040 100%);
+    color: white;
+    border: none;
+  }
+  
+  .book-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(255, 111, 0, 0.3);
+  }
+  
+  /* Disabled favorite button style */
+  .favorite-btn-disabled {
+    background: #f8f9fa;
+    color: #6c757d;
+    border: 2px dashed #ced4da;
+    cursor: not-allowed;
+    opacity: 0.8;
+  }
+  
+  .favorite-btn-disabled:hover {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+  
+  /* Info Cards */
+  .info-card {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    border-left: 4px solid var(--primary);
+    transition: transform 0.3s ease;
+  }
+  
+  .info-card:hover {
+    transform: translateX(5px);
+  }
+  
+  /* Reviews Section */
+  .reviews-header {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    position: relative;
+    display: inline-block;
+  }
+  
+  .reviews-header::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(135deg, #FF6F00 0%, #FFA040 100%);
+    border-radius: 4px;
+  }
+  
+  .review-card {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+    border-top: 3px solid transparent;
+    transition: all 0.3s ease;
+  }
+  
+  .review-card:hover {
+    transform: translateY(-5px);
+    border-top-color: var(--primary);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  }
+  
+  .review-rating {
+    color: #FFD700;
+    font-size: 1.2rem;
+    letter-spacing: 2px;
+  }
+  
+  .review-user {
+    font-weight: 600;
+    color: var(--dark);
+  }
+  
+  .review-date {
+    color: var(--gray-medium);
+    font-size: 0.9rem;
+  }
+  
+  /* Image Thumbnails */
+  .image-thumbnails {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+  }
+  
+  .thumbnail {
+    width: 80px;
+    height: 60px;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+  }
+  
+  .thumbnail:hover,
+  .thumbnail.active {
+    opacity: 1;
+    border-color: var(--primary);
+  }
+  
+  .thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  /* Capacity Meter */
+  .capacity-meter {
+    width: 100%;
+    height: 10px;
+    background: var(--gray-light);
+    border-radius: 5px;
+    overflow: hidden;
+    margin-top: 0.5rem;
+  }
+  
+  .capacity-fill {
+    height: 100%;
+    background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+    border-radius: 5px;
+    transition: width 1s ease;
+  }
+  
+  /* Mobile Responsive */
+  @media (max-width: 768px) {
+    .hero-carousel {
+      height: 300px;
+    }
+    
+    .carousel-item {
+      height: 300px;
+    }
+    
+    .accommodation-title {
+      font-size: 1.8rem;
+    }
+    
+    .amenities-grid {
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    }
+    
+    .quick-actions-card {
+      position: static;
+      margin-top: 2rem;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Image Carousel -->
+  <div class="hero-carousel mb-4">
+    <div id="accCarousel" class="carousel slide h-100" data-bs-ride="carousel">
+      <div class="carousel-inner h-100">
+        {% for img in accommodation.images %}
+        <div class="carousel-item h-100 {% if loop.first %}active{% endif %}">
+          <img src="{{ url_for('static', filename=img) }}" 
+               class="d-block w-100" 
+               alt="Accommodation Image {{ loop.index }}">
+        </div>
+        {% endfor %}
+      </div>
+      
+      {% if accommodation.images|length > 1 %}
+      <button class="carousel-control-prev" type="button" data-bs-target="#accCarousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+      </button>
+      <button class="carousel-control-next" type="button" data-bs-target="#accCarousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+      </button>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Image Thumbnails -->
+  {% if accommodation.images|length > 1 %}
+  <div class="image-thumbnails justify-content-center mb-4">
+    {% for img in accommodation.images %}
+    <div class="thumbnail {% if loop.first %}active{% endif %}" 
+         data-bs-target="#accCarousel" 
+         data-bs-slide-to="{{ loop.index0 }}">
+      <img src="{{ url_for('static', filename=img) }}" alt="Thumbnail {{ loop.index }}">
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="row">
+    <!-- Left Column - Main Content -->
+    <div class="col-lg-8">
+      <!-- Title and Basic Info -->
+      <div class="mb-4">
+        <h1 class="accommodation-title">{{ accommodation.title }}</h1>
+        
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div class="location-pin">
+            <i class="fas fa-map-marker-alt me-2"></i>
+            {{ accommodation.location }}
+          </div>
+          
+          <div class="text-warning">
+            {% if accommodation.average_rating > 0 %}
+              {% for i in range(5) %}
+                <i class="fas fa-star{% if i >= accommodation.average_rating %}-half-alt{% endif %}"></i>
+              {% endfor %}
+              <span class="ms-1 text-dark">{{ accommodation.average_rating|round(1) }}</span>
+            {% else %}
+              <span class="text-muted">No ratings yet</span>
+            {% endif %}
+          </div>
+        </div>
+        
+        <div class="d-flex align-items-center gap-4 flex-wrap">
+          <div class="price-display">
+            R{{ accommodation.price_per_month }}<small class="fs-6 text-muted">/month</small>
+          </div>
+          
+          <span class="status-badge {% if accommodation.is_available %}bg-success bg-opacity-10 text-success{% else %}bg-danger bg-opacity-10 text-danger{% endif %}">
+            {% if accommodation.is_available %}
+              <i class="fas fa-check-circle me-1"></i> Available
+            {% else %}
+              <i class="fas fa-times-circle me-1"></i> Fully Occupied
+            {% endif %}
+          </span>
+          
+          <div>
+            <i class="fas fa-users me-1 text-primary"></i>
+            <span>{{ accommodation.current_occupancy }}/{{ accommodation.capacity }} occupied</span>
+          </div>
+        </div>
+        
+        <!-- Capacity Meter -->
+        <div class="mt-3">
+          <div class="d-flex justify-content-between mb-1">
+            <small>Occupancy Rate</small>
+            <small>{{ (accommodation.current_occupancy / accommodation.capacity * 100)|round(1) }}%</small>
+          </div>
+          <div class="capacity-meter">
+            <div class="capacity-fill" 
+                 style="width: {{ (accommodation.current_occupancy / accommodation.capacity * 100) }}%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Room Type and Info Cards -->
+      <div class="row g-3 mb-4">
+        <div class="col-md-6">
+          <div class="info-card">
+            <div class="d-flex align-items-center mb-2">
+              <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                <i class="fas fa-door-open text-primary"></i>
+              </div>
+              <h6 class="mb-0">Room Type</h6>
+            </div>
+            <p class="fw-bold mb-0">{{ accommodation.room_type|replace('_', ' ')|title }}</p>
+          </div>
+        </div>
+        
+        <div class="col-md-6">
+          <div class="info-card">
+            <div class="d-flex align-items-center mb-2">
+              <div class="bg-success bg-opacity-10 rounded-circle p-2 me-3">
+                <i class="fas fa-calendar-check text-success"></i>
+              </div>
+              <h6 class="mb-0">Available From</h6>
+            </div>
+            <p class="fw-bold mb-0">Immediate</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="description-box mb-4">
+        <h4 class="mb-3">
+          <i class="fas fa-file-alt me-2 text-primary"></i>Description
+        </h4>
+        <p class="lead">{{ accommodation.description }}</p>
+      </div>
+
+      <!-- Amenities -->
+      <div class="mb-5">
+        <h4 class="mb-3">
+          <i class="fas fa-star me-2 text-warning"></i>Amenities & Features
+        </h4>
+        <div class="amenities-grid">
+          {% for amenity in accommodation.amenities %}
+          <div class="amenity-item">
+            <div class="amenity-icon">
+              {% if amenities_icons.get(amenity) %}
+                <i class="fas fa-{{ amenities_icons.get(amenity) }}"></i>
+              {% else %}
+                <i class="fas fa-check-circle"></i>
+              {% endif %}
+            </div>
+            <div class="amenity-name fw-medium">{{ amenity|title }}</div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column - Quick Actions -->
+    <div class="col-lg-4">
+      <div class="quick-actions-card">
+        <h5 class="mb-4 text-center">
+          <i class="fas fa-bolt text-warning me-2"></i>Quick Actions
+        </h5>
+        
+        {% if accommodation.is_available %}
+          <a href="{{ url_for('bookings.book_accommodation', accommodation_id=accommodation.id) }}" 
+             class="action-btn book-btn">
+            <i class="fas fa-calendar-check me-2"></i>
+            Book Now
+          </a>
+        {% else %}
+          <button class="action-btn btn-secondary" disabled>
+            <i class="fas fa-times-circle me-2"></i>
+            Fully Occupied
+          </button>
+          <div class="alert alert-info text-center mb-3">
+            <i class="fas fa-info-circle me-2"></i>
+            Join waiting list to be notified when available
+          </div>
+        {% endif %}
+        
+        <!-- Coming Soon Button -->
+        <button type="button" class="action-btn favorite-btn-disabled" onclick="showComingSoon()">
+          <i class="far fa-heart me-2"></i>Add to Favorites
+        </button>
+        <small class="text-muted d-block text-center mb-3">
+          <i class="fas fa-clock me-1"></i>Favorites coming soon!
+        </small>
+        
+        <hr class="my-4">
+        
+        <div class="text-center">
+          <p class="text-muted mb-2">
+            <i class="fas fa-shield-alt text-primary me-2"></i>
+            Secure Booking Process
+          </p>
+          <p class="text-muted mb-2">
+            <i class="fas fa-lock text-success me-2"></i>
+            Safe & Verified Property
+          </p>
+          <p class="text-muted">
+            <i class="fas fa-headset text-info me-2"></i>
+            24/7 Support Available
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reviews Section -->
+  <div class="mt-5 pt-4 border-top">
+    <h4 class="reviews-header">
+      <i class="fas fa-comments me-2"></i>Reviews & Ratings
+      {% if reviews %}
+        <span class="badge bg-primary ms-2">{{ reviews|length }}</span>
+      {% endif %}
+    </h4>
+    
+    {% if reviews %}
+      <div class="row g-4">
+        {% for review in reviews %}
+        <div class="col-lg-6">
+          <div class="review-card">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+              <div>
+                <div class="review-user">
+                  {{ review.user.full_name }}
+                </div>
+                <div class="review-date">
+                  {{ review.created_at.strftime('%B %d, %Y') }}
+                </div>
+              </div>
+              <div class="review-rating">
+                {% for i in range(5) %}
+                  <i class="fas fa-star{% if i >= review.rating %}-o text-muted{% endif %}"></i>
+                {% endfor %}
+              </div>
+            </div>
+            <p class="mb-0">{{ review.comment }}</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="text-center py-5">
+        <div class="mb-3">
+          <i class="fas fa-comment-slash fa-3x text-muted"></i>
+        </div>
+        <h5 class="text-muted mb-3">No Reviews Yet</h5>
+        <p class="text-muted mb-4">Be the first to share your experience with this accommodation!</p>
+        {% if current_user.is_authenticated %}
+          <a href="{{ url_for('bookings.add_review', accommodation_id=accommodation.id) }}" 
+             class="btn btn-outline-primary">
+            <i class="fas fa-pen me-2"></i>Write a Review
+          </a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Carousel thumbnail click handler
+    const thumbnails = document.querySelectorAll('.thumbnail');
+    const carousel = new bootstrap.Carousel(document.getElementById('accCarousel'));
+    
+    thumbnails.forEach((thumb, index) => {
+      thumb.addEventListener('click', () => {
+        // Remove active class from all thumbnails
+        thumbnails.forEach(t => t.classList.remove('active'));
+        // Add active class to clicked thumbnail
+        thumb.classList.add('active');
+        // Move carousel to corresponding slide
+        carousel.to(index);
+      });
+    });
+    
+    // Update active thumbnail when carousel slides
+    document.getElementById('accCarousel').addEventListener('slid.bs.carousel', function(e) {
+      const activeIndex = e.to;
+      thumbnails.forEach(t => t.classList.remove('active'));
+      thumbnails[activeIndex].classList.add('active');
+    });
+    
+    // Add smooth hover effects
+    const amenityItems = document.querySelectorAll('.amenity-item');
+    amenityItems.forEach(item => {
+      item.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-8px)';
+      });
+      
+      item.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0)';
+      });
+    });
+  });
+
+  // Show coming soon notification
+  function showComingSoon() {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = 'alert alert-info alert-dismissible fade show position-fixed';
+    notification.style.cssText = `
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      min-width: 300px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      border-left: 4px solid #0dcaf0;
+    `;
+    
+    notification.innerHTML = `
+      <div class="d-flex align-items-center">
+        <i class="fas fa-info-circle fa-lg me-3 text-info"></i>
+        <div>
+          <strong>Coming Soon!</strong><br>
+          <small>Favorites feature will be available soon.</small>
+        </div>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+      </div>
+    `;
+    
+    // Add to body
+    document.body.appendChild(notification);
+    
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.remove();
+      }
+    }, 3000);
+  }
+</script>
+{% endblock %}

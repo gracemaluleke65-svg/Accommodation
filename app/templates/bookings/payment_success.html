@@ -1,0 +1,456 @@
+{% extends "base.html" %}
+
+{% block title %}Payment Successful - UniStay{% endblock %}
+
+{% block page_css %}
+<style>
+    /* PAYMENT SUCCESS PAGE STYLES */
+    
+    /* Hero Section */
+    .payment-hero {
+        background: linear-gradient(135deg, rgba(255, 111, 0, 0.1) 0%, rgba(255, 160, 64, 0.05) 100%);
+        border-radius: 20px;
+        padding: 3rem;
+        margin: 2rem 0;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .payment-hero::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255, 111, 0, 0.05) 0%, transparent 70%);
+    }
+    
+    /* Success Icon Animation */
+    .success-icon-container {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        margin: 0 auto 2rem;
+    }
+    
+    .success-icon {
+        font-size: 5rem;
+        color: #10B981;
+        position: relative;
+        z-index: 2;
+        animation: successPulse 2s infinite;
+    }
+    
+    .success-icon-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(16, 185, 129, 0.1);
+        border-radius: 50%;
+        animation: rippleEffect 3s infinite;
+    }
+    
+    /* Confetti Effect */
+    .confetti {
+        position: absolute;
+        width: 10px;
+        height: 20px;
+        opacity: 0;
+        animation: confettiFall 5s infinite;
+    }
+    
+    /* Booking Details Card */
+    .booking-details-card {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        border: 2px solid rgba(255, 111, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+    
+    .booking-details-card:hover {
+        transform: translateY(-5px);
+        border-color: rgba(255, 111, 0, 0.3);
+    }
+    
+    .detail-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .detail-item:last-child {
+        border-bottom: none;
+    }
+    
+    .detail-label {
+        color: var(--secondary);
+        font-weight: 500;
+    }
+    
+    .detail-value {
+        color: var(--dark);
+        font-weight: 600;
+    }
+    
+    /* Action Buttons */
+    .action-buttons-container {
+        display: grid;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+    
+    .action-btn {
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+    
+    .action-btn-primary {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(255, 111, 0, 0.3);
+    }
+    
+    .action-btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(255, 111, 0, 0.4);
+        color: white;
+    }
+    
+    .action-btn-secondary {
+        background: white;
+        color: var(--primary);
+        border-color: var(--primary);
+    }
+    
+    .action-btn-secondary:hover {
+        background: var(--primary);
+        color: white;
+        transform: translateY(-3px);
+    }
+    
+    .action-btn-outline {
+        background: transparent;
+        color: var(--secondary);
+        border-color: var(--gray-medium);
+    }
+    
+    .action-btn-outline:hover {
+        background: var(--gray-light);
+        color: var(--dark);
+        border-color: var(--dark);
+        transform: translateY(-3px);
+    }
+    
+    /* Next Steps */
+    .next-steps-card {
+        background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
+        border-radius: 15px;
+        padding: 2rem;
+        border-left: 4px solid var(--accent);
+    }
+    
+    .step-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem 0;
+        border-bottom: 1px solid rgba(66, 153, 225, 0.1);
+    }
+    
+    .step-item:last-child {
+        border-bottom: none;
+    }
+    
+    .step-number {
+        width: 32px;
+        height: 32px;
+        background: var(--accent);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+    }
+    
+    /* Animations */
+    @keyframes successPulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+    
+    @keyframes rippleEffect {
+        0% { transform: scale(1); opacity: 1; }
+        100% { transform: scale(1.5); opacity: 0; }
+    }
+    
+    @keyframes confettiFall {
+        0% {
+            opacity: 0;
+            transform: translateY(-100px) rotate(0deg);
+        }
+        10% {
+            opacity: 1;
+        }
+        90% {
+            opacity: 1;
+        }
+        100% {
+            opacity: 0;
+            transform: translateY(100vh) rotate(360deg);
+        }
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .payment-hero {
+            padding: 2rem 1rem;
+        }
+        
+        .action-buttons-container {
+            grid-template-columns: 1fr;
+        }
+        
+        .booking-details-card {
+            padding: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Confetti Elements -->
+    <div id="confetti-container"></div>
+    
+    <!-- Success Hero Section -->
+    <div class="payment-hero text-center">
+        <div class="success-icon-container">
+            <div class="success-icon-bg"></div>
+            <i class="fas fa-check-circle success-icon"></i>
+        </div>
+        
+        <h1 class="fw-bold mb-3" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+            Payment Successful! 🎉
+        </h1>
+        
+        <p class="lead mb-4" style="max-width: 600px; margin: 0 auto;">
+            Your booking for <strong class="text-primary">{{ booking.accommodation.title }}</strong> has been confirmed and processed successfully.
+        </p>
+        
+        <div class="alert alert-success d-inline-flex align-items-center border-0 shadow-sm" style="background: rgba(16, 185, 129, 0.1);">
+            <i class="fas fa-receipt me-2 text-success"></i>
+            <span>Booking ID: <strong class="text-dark">#{{ booking.id|string|rjust(6, '0') }}</strong></span>
+        </div>
+    </div>
+    
+    <div class="row g-4">
+        <!-- Left Column: Booking Details -->
+        <div class="col-lg-8">
+            <div class="booking-details-card">
+                <h4 class="fw-bold mb-4">
+                    <i class="fas fa-file-invoice me-2 text-primary"></i>
+                    Booking Summary
+                </h4>
+                
+                <div class="detail-item">
+                    <span class="detail-label">Accommodation:</span>
+                    <span class="detail-value">{{ booking.accommodation.title }}</span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">Room Type:</span>
+                    <span class="detail-value text-capitalize">{{ booking.accommodation.room_type }}</span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">Duration:</span>
+                    <span class="detail-value">
+                        {{ booking.duration|capitalize }}
+                        {% if booking.period %} ({{ booking.period }}){% endif %}
+                    </span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">Payment Responsible:</span>
+                    <span class="detail-value text-capitalize">{{ booking.payment_responsible }}</span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">Check-in Status:</span>
+                    <span class="detail-value">
+                        <span class="badge bg-success rounded-pill px-3 py-2">
+                            <i class="fas fa-check-circle me-1"></i> Ready for Check-in
+                        </span>
+                    </span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">Total Paid:</span>
+                    <span class="detail-value h5 text-success fw-bold">
+                        ZAR {{ "%.2f"|format(booking.total_price) }}
+                    </span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="detail-label">Payment Date:</span>
+                    <span class="detail-value">
+                        <i class="far fa-calendar-alt me-1 text-primary"></i>
+                        {{ booking.updated_at.strftime('%d %B %Y') }}
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="action-buttons-container mt-4">
+                <a href="{{ url_for('bookings.view_booking', booking_id=booking.id) }}" 
+                   class="action-btn action-btn-primary">
+                    <i class="fas fa-eye me-2"></i>
+                    View Booking Details
+                </a>
+                
+                {% if booking.accommodation.id %}
+                <a href="{{ url_for('bookings.add_review', accommodation_id=booking.accommodation.id) }}" 
+                   class="action-btn action-btn-secondary">
+                    <i class="fas fa-star me-2"></i>
+                    Rate & Review Accommodation
+                </a>
+                {% endif %}
+                
+                <a href="{{ url_for('main.index') }}" 
+                   class="action-btn action-btn-outline">
+                    <i class="fas fa-home me-2"></i>
+                    Back to Homepage
+                </a>
+            </div>
+        </div>
+        
+        <!-- Right Column: Next Steps & Information -->
+        <div class="col-lg-4">
+            <!-- Next Steps -->
+            <div class="next-steps-card mb-4">
+                <h5 class="fw-bold mb-3">
+                    <i class="fas fa-clipboard-list me-2 text-accent"></i>
+                    What's Next?
+                </h5>
+                
+                <div class="step-item">
+                    <div class="step-number">1</div>
+                    <div>
+                        <h6 class="fw-bold mb-1">Check-in Instructions</h6>
+                        <p class="small mb-0 text-muted">You'll receive check-in details via email within 24 hours.</p>
+                    </div>
+                </div>
+                
+                <div class="step-item">
+                    <div class="step-number">2</div>
+                    <div>
+                        <h6 class="fw-bold mb-1">Access Your Booking</h6>
+                        <p class="small mb-0 text-muted">View booking details anytime in "My Bookings" section.</p>
+                    </div>
+                </div>
+                
+                <div class="step-item">
+                    <div class="step-number">3</div>
+                    <div>
+                        <h6 class="fw-bold mb-1">Need Help?</h6>
+                        <p class="small mb-0 text-muted">Contact support for any questions about your stay.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contact Support -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3">
+                        <i class="fas fa-headset me-2 text-primary"></i>
+                        Need Assistance?
+                    </h6>
+                    <p class="small text-muted mb-3">
+                        Our support team is here to help with any questions about your booking.
+                    </p>
+                    <div class="d-grid gap-2">
+                        <a href="mailto:support@unistay.com" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-envelope me-1"></i> Email Support
+                        </a>
+                        <a href="tel:+27111234567" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-phone me-1"></i> Call Support
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Success Message -->
+    <div class="text-center mt-5 pt-4 border-top">
+        <p class="text-muted">
+            <i class="fas fa-info-circle me-1 text-primary"></i>
+            A confirmation email has been sent to <strong>{{ current_user.email }}</strong>
+        </p>
+        <div class="mt-2">
+            <a href="{{ url_for('bookings.my_bookings') }}" class="text-decoration-none text-primary">
+                <i class="fas fa-arrow-right me-1"></i>
+                View all my bookings
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Create confetti effect
+        function createConfetti() {
+            const container = document.getElementById('confetti-container');
+            const colors = ['#FF6F00', '#FFA040', '#4299E1', '#10B981', '#F59E0B'];
+            
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDelay = Math.random() * 5 + 's';
+                confetti.style.width = Math.random() * 10 + 5 + 'px';
+                confetti.style.height = Math.random() * 15 + 10 + 'px';
+                container.appendChild(confetti);
+            }
+        }
+        
+        createConfetti();
+        
+        // Add some interactive celebration
+        const successIcon = document.querySelector('.success-icon');
+        successIcon.addEventListener('mouseenter', function() {
+            this.style.animation = 'successPulse 0.5s infinite';
+        });
+        
+        successIcon.addEventListener('mouseleave', function() {
+            this.style.animation = 'successPulse 2s infinite';
+        });
+        
+        // Smooth scroll to top on page load
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        
+        // Console celebration
+        console.log('%c🎉 Payment Successful! 🎉', 'color: #FF6F00; font-size: 16px; font-weight: bold;');
+        console.log('%cThank you for booking with UniStay!', 'color: #4299E1;');
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,568 @@
+{% extends "base.html" %}
+
+{% block title %}Rate & Review - {{ accommodation.title }} - UniStay{% endblock %}
+
+{% block page_css %}
+<style>
+  /* REVIEW PAGE SPECIFIC STYLES */
+  .review-container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .accommodation-preview {
+    background: linear-gradient(135deg, #FFFFFF 0%, #F8F9FA 100%);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border-left: 4px solid var(--primary);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+  }
+  
+  .accommodation-preview:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  }
+  
+  .rating-stars {
+    font-size: 1.8rem;
+    color: #FFD700;
+    margin-bottom: 0.5rem;
+  }
+  
+  .star-input {
+    display: none;
+  }
+  
+  .star-label {
+    font-size: 2rem;
+    color: #ddd;
+    cursor: pointer;
+    transition: color 0.2s;
+    margin-right: 0.3rem;
+  }
+  
+  .star-label:hover,
+  .star-label:hover ~ .star-label {
+    color: #FFD700;
+  }
+  
+  .star-input:checked ~ .star-label {
+    color: #FFD700;
+  }
+  
+  .star-input:checked + .star-label {
+    color: #FFD700;
+  }
+  
+  .form-floating {
+    margin-bottom: 1.5rem;
+  }
+  
+  .form-floating > .form-control {
+    height: 120px;
+    min-height: 120px;
+  }
+  
+  .form-select {
+    border-radius: 10px;
+    border: 2px solid #e9ecef;
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+  }
+  
+  .form-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 0.25rem rgba(255, 111, 0, 0.25);
+  }
+  
+  .form-control {
+    border-radius: 10px;
+    border: 2px solid #e9ecef;
+    padding: 1rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+  }
+  
+  .form-control:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 0.25rem rgba(255, 111, 0, 0.25);
+  }
+  
+  .submit-btn {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    border: none;
+    color: white;
+    padding: 1rem 2.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+    width: 100%;
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  
+  .submit-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(255, 111, 0, 0.3);
+  }
+  
+  .submit-btn:active {
+    transform: translateY(-1px);
+  }
+  
+  .preview-card {
+    border-radius: 15px;
+    overflow: hidden;
+    background: white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  }
+  
+  .preview-image {
+    height: 120px;
+    object-fit: cover;
+    width: 100%;
+  }
+  
+  .review-guidelines {
+    background: linear-gradient(135deg, #F0F9FF 0%, #E6F7FF 100%);
+    border-radius: 15px;
+    padding: 1.5rem;
+    border-left: 4px solid var(--accent);
+    margin-top: 2rem;
+  }
+  
+  .guideline-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+  }
+  
+  .guideline-icon {
+    background: var(--accent);
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    flex-shrink: 0;
+  }
+  
+  /* Rating Animation */
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+  }
+  
+  .star-label:hover {
+    animation: pulse 0.3s ease;
+  }
+  
+  /* Character Counter */
+  .char-counter {
+    font-size: 0.85rem;
+    color: #6c757d;
+    text-align: right;
+    margin-top: 0.5rem;
+  }
+  
+  .char-counter.warning {
+    color: #ff9800;
+  }
+  
+  .char-counter.danger {
+    color: #f44336;
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .accommodation-preview {
+      padding: 1rem;
+    }
+    
+    .star-label {
+      font-size: 1.8rem;
+    }
+    
+    .submit-btn {
+      padding: 0.875rem 2rem;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="review-container">
+    <!-- Page Header -->
+    <div class="text-center mb-5">
+      <h1 class="display-5 fw-bold text-gradient mb-3">Share Your Experience</h1>
+      <p class="text-muted lead">Help other students by sharing your honest review</p>
+      <div class="d-flex justify-content-center">
+        <div class="bg-primary" style="width: 60px; height: 3px; border-radius: 10px;"></div>
+      </div>
+    </div>
+    
+    <!-- Accommodation Preview -->
+    <div class="accommodation-preview">
+      <div class="row align-items-center">
+        <div class="col-md-3">
+          <div class="preview-card">
+            {% if accommodation.images and accommodation.images|length > 0 %}
+              <img src="{{ url_for('static', filename=accommodation.images[0]) }}" 
+                   alt="{{ accommodation.title }}" 
+                   class="preview-image">
+            {% else %}
+              <div class="preview-image bg-light d-flex align-items-center justify-content-center">
+                <i class="fas fa-home fa-2x text-muted"></i>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+        <div class="col-md-9">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <h3 class="h4 fw-bold mb-2">{{ accommodation.title }}</h3>
+              <p class="text-muted mb-1">
+                <i class="fas fa-map-marker-alt text-primary me-1"></i>
+                {{ accommodation.location }}
+              </p>
+              <div class="d-flex align-items-center">
+                <span class="badge bg-primary bg-opacity-10 text-primary me-2">
+                  <i class="fas fa-door-closed me-1"></i>
+                  {{ accommodation.room_type|title }}
+                </span>
+                <span class="badge bg-success bg-opacity-10 text-success">
+                  <i class="fas fa-rand-sign me-1"></i>
+                  R{{ accommodation.price_per_month|int }}/month
+                </span>
+              </div>
+            </div>
+            <div class="text-end">
+              <div class="rating-stars">
+                {% if accommodation.average_rating > 0 %}
+                  {% for i in range(5) %}
+                    <i class="fas fa-star{% if i >= accommodation.average_rating|int %} text-muted{% endif %}"></i>
+                  {% endfor %}
+                  <span class="ms-2 fw-bold">{{ accommodation.average_rating|round(1) }}</span>
+                {% else %}
+                  <span class="text-muted">No reviews yet</span>
+                {% endif %}
+              </div>
+              <small class="text-muted">{{ accommodation.reviews|length }} reviews</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="row">
+      <!-- Review Form -->
+      <div class="col-lg-8">
+        <div class="card card-shadow border-0">
+          <div class="card-body p-4 p-md-5">
+            <h3 class="card-title fw-bold mb-4 text-gradient">Write Your Review</h3>
+            
+            <form method="POST" id="reviewForm">
+              {{ form.hidden_tag() }}
+              
+              <!-- Rating Selection -->
+              <div class="mb-4">
+                <label class="form-label fw-bold mb-3">Your Rating</label>
+                <div class="rating-input mb-3">
+                  <div class="d-flex justify-content-center justify-content-md-start">
+                    {% for i in range(5, 0, -1) %}
+                      <input type="radio" name="rating" value="{{ i }}" 
+                             id="star{{ i }}" class="star-input"
+                             {% if form.rating.data == i|string %}checked{% endif %}>
+                      <label for="star{{ i }}" class="star-label">
+                        <i class="fas fa-star"></i>
+                      </label>
+                    {% endfor %}
+                  </div>
+                  <div class="text-center text-md-start mt-2">
+                    <small class="text-muted">Select {{ form.rating.data or 5 }} stars for perfect experience</small>
+                  </div>
+                  {% if form.rating.errors %}
+                    <div class="text-danger small mt-1">
+                      {% for error in form.rating.errors %}
+                        {{ error }}
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+              
+              <!-- Comment -->
+              <div class="mb-4">
+                <div class="form-floating">
+                  {{ form.comment(class="form-control", id="comment", 
+                                  placeholder="Share your experience...",
+                                  style="height: 150px; min-height: 150px;") }}
+                  <label for="comment">
+                    <i class="fas fa-comment-dots me-1"></i>
+                    Your Review Details
+                  </label>
+                </div>
+                <div class="char-counter" id="charCounter">
+                  <span id="charCount">0</span>/500 characters
+                </div>
+                {% if form.comment.errors %}
+                  <div class="text-danger small mt-1">
+                    {% for error in form.comment.errors %}
+                      {{ error }}
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+              
+              <!-- Submit Button -->
+              <div class="d-grid">
+                <button type="submit" class="submit-btn">
+                  <i class="fas fa-paper-plane me-2"></i>
+                  Submit Review
+                </button>
+                <a href="{{ url_for('main.accommodation_detail', id=accommodation.id) }}" 
+                   class="btn btn-outline-primary mt-2 rounded-pill">
+                  <i class="fas fa-arrow-left me-1"></i>
+                  Back to Accommodation
+                </a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Guidelines Sidebar -->
+      <div class="col-lg-4 mt-4 mt-lg-0">
+        <div class="review-guidelines">
+          <h4 class="h5 fw-bold mb-3">
+            <i class="fas fa-lightbulb text-primary me-2"></i>
+            Review Guidelines
+          </h4>
+          
+          <div class="guideline-item">
+            <div class="guideline-icon">
+              <i class="fas fa-check fa-xs"></i>
+            </div>
+            <div>
+              <h6 class="fw-bold mb-1">Be Specific</h6>
+              <p class="small mb-0">Mention specific features you liked or didn't like</p>
+            </div>
+          </div>
+          
+          <div class="guideline-item">
+            <div class="guideline-icon">
+              <i class="fas fa-check fa-xs"></i>
+            </div>
+            <div>
+              <h6 class="fw-bold mb-1">Be Honest</h6>
+              <p class="small mb-0">Share your genuine experience to help others</p>
+            </div>
+          </div>
+          
+          <div class="guideline-item">
+            <div class="guideline-icon">
+              <i class="fas fa-check fa-xs"></i>
+            </div>
+            <div>
+              <h6 class="fw-bold mb-1">Be Respectful</h6>
+              <p class="small mb-0">Provide constructive feedback respectfully</p>
+            </div>
+          </div>
+          
+          <div class="guideline-item">
+            <div class="guideline-icon">
+              <i class="fas fa-check fa-xs"></i>
+            </div>
+            <div>
+              <h6 class="fw-bold mb-1">Include Details</h6>
+              <p class="small mb-0">Talk about amenities, location, cleanliness, etc.</p>
+            </div>
+          </div>
+          
+          <div class="mt-4 pt-3 border-top">
+            <div class="d-flex align-items-center">
+              <div class="me-3">
+                <div class="avatar-circle bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" 
+                     style="width: 40px; height: 40px;">
+                  {{ current_user.full_name[0]|upper }}
+                </div>
+              </div>
+              <div>
+                <h6 class="fw-bold mb-0">{{ current_user.full_name }}</h6>
+                <p class="small text-muted mb-0">Reviewing as a verified student</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Review Statistics -->
+        <div class="card card-shadow border-0 mt-4">
+          <div class="card-body">
+            <h5 class="card-title fw-bold mb-3">Review Statistics</h5>
+            <div class="d-flex align-items-center mb-3">
+              <div class="flex-shrink-0">
+                <i class="fas fa-check-circle fa-2x text-success"></i>
+              </div>
+              <div class="flex-grow-1 ms-3">
+                <h6 class="fw-bold mb-0">Verified Booking</h6>
+                <p class="small text-muted mb-0">Your payment has been confirmed</p>
+              </div>
+            </div>
+            <div class="d-flex align-items-center">
+              <div class="flex-shrink-0">
+                <i class="fas fa-shield-alt fa-2x text-primary"></i>
+              </div>
+              <div class="flex-grow-1 ms-3">
+                <h6 class="fw-bold mb-0">Protected Review</h6>
+                <p class="small text-muted mb-0">Your review is anonymous to others</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const commentTextarea = document.getElementById('comment');
+    const charCounter = document.getElementById('charCounter');
+    const charCount = document.getElementById('charCount');
+    const reviewForm = document.getElementById('reviewForm');
+    
+    // Character counter
+    function updateCharCount() {
+      const length = commentTextarea.value.length;
+      charCount.textContent = length;
+      
+      // Update counter color based on length
+      charCounter.classList.remove('warning', 'danger');
+      if (length > 400 && length < 475) {
+        charCounter.classList.add('warning');
+      } else if (length >= 475) {
+        charCounter.classList.add('danger');
+      }
+    }
+    
+    // Initialize character count
+    updateCharCount();
+    
+    // Update on input
+    commentTextarea.addEventListener('input', updateCharCount);
+    
+    // Star rating interaction
+    const starInputs = document.querySelectorAll('.star-input');
+    const starLabels = document.querySelectorAll('.star-label');
+    
+    starLabels.forEach(label => {
+      label.addEventListener('mouseover', function() {
+        const starValue = this.previousElementSibling.value;
+        highlightStars(starValue);
+      });
+      
+      label.addEventListener('click', function() {
+        const starValue = this.previousElementSibling.value;
+        highlightStars(starValue);
+      });
+    });
+    
+    function highlightStars(value) {
+      starLabels.forEach((label, index) => {
+        const labelValue = 5 - index;
+        if (labelValue <= value) {
+          label.style.color = '#FFD700';
+          label.querySelector('i').classList.add('fas');
+          label.querySelector('i').classList.remove('far');
+        } else {
+          label.style.color = '#ddd';
+          label.querySelector('i').classList.add('far');
+          label.querySelector('i').classList.remove('fas');
+        }
+      });
+    }
+    
+    // Form validation
+    reviewForm.addEventListener('submit', function(e) {
+      const rating = document.querySelector('input[name="rating"]:checked');
+      const comment = commentTextarea.value.trim();
+      
+      if (!rating) {
+        e.preventDefault();
+        showAlert('Please select a rating', 'warning');
+        return;
+      }
+      
+      if (comment.length < 10) {
+        e.preventDefault();
+        showAlert('Please write a more detailed review (minimum 10 characters)', 'warning');
+        return;
+      }
+      
+      if (comment.length > 500) {
+        e.preventDefault();
+        showAlert('Review must be less than 500 characters', 'warning');
+        return;
+      }
+      
+      // Show loading state
+      const submitBtn = this.querySelector('.submit-btn');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Submitting...';
+      submitBtn.disabled = true;
+    });
+    
+    function showAlert(message, type) {
+      // Remove existing alerts
+      const existingAlert = document.querySelector('.custom-alert');
+      if (existingAlert) {
+        existingAlert.remove();
+      }
+      
+      // Create alert
+      const alert = document.createElement('div');
+      alert.className = `alert alert-${type} custom-alert alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
+      alert.style.zIndex = '9999';
+      alert.innerHTML = `
+        <div class="d-flex align-items-center">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          <span>${message}</span>
+          <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+        </div>
+      `;
+      
+      document.body.appendChild(alert);
+      
+      // Auto remove after 5 seconds
+      setTimeout(() => {
+        if (alert.parentNode) {
+          alert.remove();
+        }
+      }, 5000);
+    }
+    
+    // Initialize stars based on current selection
+    const selectedRating = document.querySelector('input[name="rating"]:checked');
+    if (selectedRating) {
+      highlightStars(selectedRating.value);
+    } else {
+      // Default to 5 stars
+      highlightStars(5);
+    }
+  });
+</script>
+{% endblock %}

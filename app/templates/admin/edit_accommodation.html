@@ -1,0 +1,803 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Accommodation - UniStay Admin{% endblock %}
+
+{% block page_css %}
+<style>
+  /* EDIT ACCOMMODATION SPECIFIC STYLES */
+  
+  .form-section {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    border: 1px solid #f0f0f0;
+    transition: all 0.3s ease;
+  }
+  
+  .form-section:hover {
+    box-shadow: 0 6px 30px rgba(0, 0, 0, 0.08);
+  }
+  
+  .section-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f0f0f0;
+  }
+  
+  .section-icon {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    color: white;
+  }
+  
+  .form-label {
+    font-weight: 600;
+    color: var(--secondary);
+    margin-bottom: 0.5rem;
+  }
+  
+  .form-control, .form-select {
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+    background: white;
+  }
+  
+  .form-control:focus, .form-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(255, 111, 0, 0.15);
+    background: white;
+  }
+  
+  .form-control:hover, .form-select:hover {
+    border-color: #cbd5e0;
+  }
+  
+  .image-upload-area {
+    border: 2px dashed #cbd5e0;
+    border-radius: 12px;
+    padding: 3rem 1rem;
+    text-align: center;
+    background: #fafafa;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 1rem;
+  }
+  
+  .image-upload-area:hover {
+    border-color: var(--primary);
+    background: #fffaf5;
+  }
+  
+  .image-upload-area.dragover {
+    border-color: var(--primary);
+    background: linear-gradient(135deg, #fffaf5 0%, #fff0e6 100%);
+    transform: scale(1.02);
+  }
+  
+  .upload-icon {
+    font-size: 3rem;
+    color: var(--primary);
+    margin-bottom: 1rem;
+  }
+  
+  .current-images {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+  
+  .image-preview {
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+  
+  .image-preview:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+  }
+  
+  .image-preview img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    display: block;
+  }
+  
+  .remove-image {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(239, 68, 68, 0.9);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.3s ease;
+  }
+  
+  .image-preview:hover .remove-image {
+    opacity: 1;
+  }
+  
+  .remove-image:hover {
+    background: #dc2626;
+    transform: scale(1.1);
+  }
+  
+  .amenities-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+  
+  .amenity-tag {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border: 1px solid #bae6fd;
+    color: #0369a1;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .amenity-tag i {
+    color: var(--primary);
+  }
+  
+  .capacity-indicator {
+    display: flex;
+    align-items: center;
+    margin-top: 0.5rem;
+  }
+  
+  .capacity-progress {
+    flex: 1;
+    margin-right: 1rem;
+  }
+  
+  .status-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.875rem;
+  }
+  
+  .status-available {
+    background: #d1fae5;
+    color: #065f46;
+  }
+  
+  .status-occupied {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+  
+  .form-actions {
+    position: sticky;
+    bottom: 2rem;
+    background: white;
+    padding: 1.5rem;
+    border-radius: 16px;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+    margin-top: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #f0f0f0;
+  }
+  
+  .btn-delete {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+  
+  .btn-delete:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+  }
+  
+  .btn-update {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    border: none;
+    padding: 0.875rem 2rem;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    min-width: 200px;
+  }
+  
+  .btn-update:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(255, 111, 0, 0.25);
+  }
+  
+  /* Floating label animation */
+  .form-floating {
+    position: relative;
+  }
+  
+  .form-floating label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    padding: 1rem 0.75rem;
+    pointer-events: none;
+    border: 1px solid transparent;
+    transform-origin: 0 0;
+    transition: opacity 0.1s ease-in-out, transform 0.1s ease-in-out;
+  }
+  
+  .form-floating>.form-control:focus~label,
+  .form-floating>.form-control:not(:placeholder-shown)~label {
+    transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+    opacity: 0.65;
+  }
+  
+  /* Character counter */
+  .char-counter {
+    font-size: 0.875rem;
+    color: #6b7280;
+    text-align: right;
+    margin-top: 0.25rem;
+  }
+  
+  .char-counter.near-limit {
+    color: #f59e0b;
+  }
+  
+  .char-counter.over-limit {
+    color: #ef4444;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="row">
+    <div class="col-12">
+      <!-- Page Header -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h1 class="h3 fw-bold text-gradient mb-2">Edit Accommodation</h1>
+          <p class="text-gray-medium mb-0">Update accommodation details and manage images</p>
+        </div>
+        <div class="d-flex gap-2">
+          <a href="{{ url_for('admin.manage_accommodations') }}" class="btn btn-outline-primary rounded-pill">
+            <i class="fas fa-arrow-left me-2"></i>Back to List
+          </a>
+        </div>
+      </div>
+      
+      <!-- Current Status -->
+      <div class="alert alert-info border-0 rounded-3 mb-4">
+        <div class="d-flex align-items-center">
+          <i class="fas fa-info-circle fa-lg me-3 text-primary"></i>
+          <div>
+            <h6 class="fw-bold mb-1">Current Status: 
+              <span class="status-badge ms-2 {% if accommodation.is_available %}status-available{% else %}status-occupied{% endif %}">
+                {% if accommodation.is_available %}Available{% else %}Fully Occupied{% endif %}
+              </span>
+            </h6>
+            <p class="mb-0">Occupancy: {{ accommodation.current_occupancy }} / {{ accommodation.capacity }} 
+              ({{ ((accommodation.current_occupancy / accommodation.capacity) * 100)|round|int }}%)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Form -->
+  <form method="POST" enctype="multipart/form-data" id="editForm">
+    {{ form.hidden_tag() }}
+    
+    <!-- Basic Information Section -->
+    <div class="form-section">
+      <div class="section-header">
+        <div class="section-icon">
+          <i class="fas fa-info-circle"></i>
+        </div>
+        <h4 class="fw-bold mb-0">Basic Information</h4>
+      </div>
+      
+      <div class="row g-4">
+        <div class="col-md-8">
+          <div class="form-floating mb-3">
+            {{ form.title(class="form-control", id="titleInput", placeholder="Accommodation Title") }}
+            <label for="titleInput">Accommodation Title*</label>
+            <div class="char-counter" id="titleCounter">0/200</div>
+          </div>
+        </div>
+        
+        <div class="col-md-4">
+          <div class="form-floating">
+            {{ form.room_type(class="form-select", id="roomTypeSelect") }}
+            <label for="roomTypeSelect">Room Type*</label>
+          </div>
+        </div>
+        
+        <div class="col-md-12">
+          <div class="form-floating mb-3">
+            {{ form.description(class="form-control", id="descriptionInput", placeholder="Description", style="height: 120px") }}
+            <label for="descriptionInput">Description*</label>
+            <div class="char-counter" id="descriptionCounter">0/1000</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Pricing & Location Section -->
+    <div class="form-section">
+      <div class="section-header">
+        <div class="section-icon">
+          <i class="fas fa-tag"></i>
+        </div>
+        <h4 class="fw-bold mb-0">Pricing & Location</h4>
+      </div>
+      
+      <div class="row g-4">
+        <div class="col-md-6">
+          <div class="form-floating mb-3">
+            {{ form.price_per_month(class="form-control", id="priceInput", placeholder="Price", step="0.01") }}
+            <label for="priceInput">Price per Month (ZAR)*</label>
+            <div class="text-muted mt-1">
+              <small>Current: R{{ accommodation.price_per_month|int }}</small>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-6">
+          <div class="form-floating">
+            {{ form.location(class="form-control", id="locationInput", placeholder="Location") }}
+            <label for="locationInput">Location*</label>
+          </div>
+        </div>
+        
+        <div class="col-md-12">
+          <div class="bg-light p-3 rounded-3">
+            <h6 class="fw-bold mb-3">Price Preview</h6>
+            <div class="row">
+              <div class="col-md-4">
+                <div class="text-center p-3 bg-white rounded-3 border">
+                  <div class="text-primary fw-bold">Monthly</div>
+                  <div class="h4 fw-bold">R<span id="monthlyPreview">{{ accommodation.price_per_month|int }}</span></div>
+                  <small class="text-muted">Per person</small>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="text-center p-3 bg-white rounded-3 border">
+                  <div class="text-primary fw-bold">Semester (5 months)</div>
+                  <div class="h4 fw-bold">R<span id="semesterPreview">{{ (accommodation.price_per_month * 5)|int }}</span></div>
+                  <small class="text-muted">One-time payment</small>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="text-center p-3 bg-white rounded-3 border">
+                  <div class="text-primary fw-bold">Annual (10 months)</div>
+                  <div class="h4 fw-bold">R<span id="annualPreview">{{ (accommodation.price_per_month * 10)|int }}</span></div>
+                  <small class="text-muted">Best value</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Capacity & Occupancy Section -->
+    <div class="form-section">
+      <div class="section-header">
+        <div class="section-icon">
+          <i class="fas fa-users"></i>
+        </div>
+        <h4 class="fw-bold mb-0">Capacity & Occupancy</h4>
+      </div>
+      
+      <div class="row g-4">
+        <div class="col-md-6">
+          <div class="form-floating mb-3">
+            {{ form.capacity(class="form-control", id="capacityInput", placeholder="Capacity") }}
+            <label for="capacityInput">Total Capacity*</label>
+          </div>
+        </div>
+        
+        <div class="col-md-6">
+          <div class="form-floating">
+            {{ form.current_occupancy(class="form-control", id="occupancyInput", placeholder="Current Occupancy") }}
+            <label for="occupancyInput">Current Occupancy</label>
+          </div>
+        </div>
+        
+        <div class="col-12">
+          <div class="capacity-indicator">
+            <div class="capacity-progress">
+              <div class="d-flex justify-content-between mb-2">
+                <small class="fw-bold">Occupancy Rate</small>
+                <small id="occupancyRate">0%</small>
+              </div>
+              <div class="progress">
+                <div class="progress-bar bg-success" id="occupancyBar" style="width: 0%"></div>
+              </div>
+            </div>
+            <div id="statusDisplay"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Amenities Section -->
+    <div class="form-section">
+      <div class="section-header">
+        <div class="section-icon">
+          <i class="fas fa-star"></i>
+        </div>
+        <h4 class="fw-bold mb-0">Amenities</h4>
+      </div>
+      
+      <div class="mb-3">
+        <div class="form-floating">
+          {{ form.amenities(class="form-control", id="amenitiesInput", placeholder="Amenities (comma-separated)") }}
+          <label for="amenitiesInput">Amenities (comma-separated)</label>
+        </div>
+        <div class="text-muted mt-2">
+          <small>Example: wifi, laundry, parking, gym, pool</small>
+        </div>
+      </div>
+      
+      {% if accommodation.amenities %}
+      <div class="amenities-tags">
+        {% for amenity in accommodation.amenities %}
+        <div class="amenity-tag">
+          {% if amenity == 'wifi' %}<i class="fas fa-wifi"></i>
+          {% elif amenity == 'laundry' %}<i class="fas fa-tshirt"></i>
+          {% elif amenity == 'parking' %}<i class="fas fa-car"></i>
+          {% elif amenity == 'gym' %}<i class="fas fa-dumbbell"></i>
+          {% elif amenity == 'pool' %}<i class="fas fa-swimming-pool"></i>
+          {% elif amenity == 'kitchen' %}<i class="fas fa-utensils"></i>
+          {% else %}<i class="fas fa-check"></i>{% endif %}
+          {{ amenity|title }}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+    
+    <!-- Images Section -->
+    <div class="form-section">
+      <div class="section-header">
+        <div class="section-icon">
+          <i class="fas fa-images"></i>
+        </div>
+        <h4 class="fw-bold mb-0">Images</h4>
+      </div>
+      
+      <!-- Current Images -->
+      {% if accommodation.images %}
+      <div class="mb-4">
+        <h6 class="fw-bold mb-3">Current Images</h6>
+        <div class="current-images">
+          {% for image in accommodation.images %}
+          <div class="image-preview">
+            <img src="{{ url_for('static', filename=image) }}" alt="Accommodation Image">
+            <div class="remove-image" data-image="{{ image }}">
+              <i class="fas fa-times"></i>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+      
+      <!-- Add New Images -->
+      <div>
+        <h6 class="fw-bold mb-3">Add New Images</h6>
+        <div class="image-upload-area" id="dropArea">
+          <div class="upload-icon">
+            <i class="fas fa-cloud-upload-alt"></i>
+          </div>
+          <h5 class="fw-bold mb-2">Drag & Drop Images</h5>
+          <p class="text-gray-medium mb-3">or click to browse files</p>
+          <input type="file" name="images" multiple class="form-control d-none" id="imageUpload" accept="image/*">
+          <button type="button" class="btn btn-outline-primary rounded-pill" onclick="document.getElementById('imageUpload').click()">
+            <i class="fas fa-folder-open me-2"></i>Browse Images
+          </button>
+          <div class="mt-3">
+            <small class="text-muted">Supports JPG, PNG, GIF. Max 5MB per image.</small>
+          </div>
+        </div>
+        
+        <div id="filePreview" class="mt-3"></div>
+      </div>
+    </div>
+    
+    <!-- Form Actions -->
+    <div class="form-actions">
+      <div>
+        <button type="button" class="btn-delete" data-bs-toggle="modal" data-bs-target="#deleteModal">
+          <i class="fas fa-trash me-2"></i>Delete Accommodation
+        </button>
+      </div>
+      <div>
+        <button type="button" class="btn btn-outline-primary rounded-pill me-3" onclick="window.history.back()">
+          Cancel
+        </button>
+        <button type="submit" class="btn-update">
+          <i class="fas fa-save me-2"></i>Update Accommodation
+        </button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header border-0">
+        <h5 class="modal-title fw-bold text-danger">
+          <i class="fas fa-exclamation-triangle me-2"></i>Delete Accommodation
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body py-4">
+        <div class="alert alert-danger border-0 mb-4">
+          <div class="d-flex">
+            <i class="fas fa-exclamation-circle fa-lg me-3 mt-1"></i>
+            <div>
+              <h6 class="fw-bold mb-1">Warning: This action cannot be undone</h6>
+              <p class="mb-0">All accommodation data, images, and reviews will be permanently deleted.</p>
+            </div>
+          </div>
+        </div>
+        
+        <p>Are you sure you want to delete <strong>"{{ accommodation.title }}"</strong>?</p>
+        
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" id="confirmDelete">
+          <label class="form-check-label" for="confirmDelete">
+            I understand this action is irreversible
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <form action="{{ url_for('admin.delete_accommodation', id=accommodation.id) }}" method="POST" style="display: inline;">
+          <button type="submit" class="btn-delete" id="confirmDeleteBtn" disabled>
+            <i class="fas fa-trash me-2"></i>Delete Permanently
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Character counters
+    const titleInput = document.getElementById('titleInput');
+    const descriptionInput = document.getElementById('descriptionInput');
+    const titleCounter = document.getElementById('titleCounter');
+    const descriptionCounter = document.getElementById('descriptionCounter');
+    
+    function updateCounter(input, counter, max) {
+      const length = input.value.length;
+      counter.textContent = `${length}/${max}`;
+      if (length > max * 0.9) {
+        counter.classList.add('near-limit');
+        if (length > max) {
+          counter.classList.add('over-limit');
+        } else {
+          counter.classList.remove('over-limit');
+        }
+      } else {
+        counter.classList.remove('near-limit', 'over-limit');
+      }
+    }
+    
+    if (titleInput) {
+      updateCounter(titleInput, titleCounter, 200);
+      titleInput.addEventListener('input', () => updateCounter(titleInput, titleCounter, 200));
+    }
+    
+    if (descriptionInput) {
+      updateCounter(descriptionInput, descriptionCounter, 1000);
+      descriptionInput.addEventListener('input', () => updateCounter(descriptionInput, descriptionCounter, 1000));
+    }
+    
+    // Price preview calculator
+    const priceInput = document.getElementById('priceInput');
+    const monthlyPreview = document.getElementById('monthlyPreview');
+    const semesterPreview = document.getElementById('semesterPreview');
+    const annualPreview = document.getElementById('annualPreview');
+    
+    function updatePricePreview() {
+      const price = parseFloat(priceInput.value) || 0;
+      monthlyPreview.textContent = Math.round(price);
+      semesterPreview.textContent = Math.round(price * 5);
+      annualPreview.textContent = Math.round(price * 10);
+    }
+    
+    if (priceInput) {
+      updatePricePreview();
+      priceInput.addEventListener('input', updatePricePreview);
+    }
+    
+    // Occupancy calculator
+    const capacityInput = document.getElementById('capacityInput');
+    const occupancyInput = document.getElementById('occupancyInput');
+    const occupancyRate = document.getElementById('occupancyRate');
+    const occupancyBar = document.getElementById('occupancyBar');
+    const statusDisplay = document.getElementById('statusDisplay');
+    
+    function updateOccupancy() {
+      const capacity = parseInt(capacityInput.value) || 0;
+      const occupancy = parseInt(occupancyInput.value) || 0;
+      
+      if (capacity > 0) {
+        const rate = Math.min(100, Math.round((occupancy / capacity) * 100));
+        occupancyRate.textContent = `${rate}%`;
+        occupancyBar.style.width = `${rate}%`;
+        
+        // Update status badge
+        if (occupancy >= capacity) {
+          statusDisplay.innerHTML = `<span class="status-badge status-occupied">Fully Occupied</span>`;
+          occupancyBar.classList.remove('bg-success', 'bg-warning');
+          occupancyBar.classList.add('bg-danger');
+        } else if (rate >= 80) {
+          statusDisplay.innerHTML = `<span class="status-badge" style="background:#fef3c7;color:#92400e;">Almost Full</span>`;
+          occupancyBar.classList.remove('bg-success', 'bg-danger');
+          occupancyBar.classList.add('bg-warning');
+        } else {
+          statusDisplay.innerHTML = `<span class="status-badge status-available">Available</span>`;
+          occupancyBar.classList.remove('bg-warning', 'bg-danger');
+          occupancyBar.classList.add('bg-success');
+        }
+      }
+    }
+    
+    if (capacityInput && occupancyInput) {
+      updateOccupancy();
+      capacityInput.addEventListener('input', updateOccupancy);
+      occupancyInput.addEventListener('input', updateOccupancy);
+    }
+    
+    // Image upload drag and drop
+    const dropArea = document.getElementById('dropArea');
+    const imageUpload = document.getElementById('imageUpload');
+    const filePreview = document.getElementById('filePreview');
+    
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+      dropArea.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    function preventDefaults(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropArea.addEventListener(eventName, highlight, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropArea.addEventListener(eventName, unhighlight, false);
+    });
+    
+    function highlight() {
+      dropArea.classList.add('dragover');
+    }
+    
+    function unhighlight() {
+      dropArea.classList.remove('dragover');
+    }
+    
+    dropArea.addEventListener('drop', handleDrop, false);
+    
+    function handleDrop(e) {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+      imageUpload.files = files;
+      previewFiles(files);
+    }
+    
+    imageUpload.addEventListener('change', function() {
+      previewFiles(this.files);
+    });
+    
+    function previewFiles(files) {
+      filePreview.innerHTML = '';
+      if (files.length > 0) {
+        const previewHeader = document.createElement('div');
+        previewHeader.className = 'd-flex justify-content-between align-items-center mb-3';
+        previewHeader.innerHTML = `
+          <h6 class="fw-bold mb-0">Selected Images (${files.length})</h6>
+          <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('filePreview').innerHTML=''">
+            Clear All
+          </button>
+        `;
+        filePreview.appendChild(previewHeader);
+        
+        const previewGrid = document.createElement('div');
+        previewGrid.className = 'current-images';
+        
+        Array.from(files).forEach(file => {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            const img = document.createElement('div');
+            img.className = 'image-preview';
+            img.innerHTML = `
+              <img src="${e.target.result}" alt="Preview">
+              <div class="remove-image" onclick="this.parentElement.remove()">
+                <i class="fas fa-times"></i>
+              </div>
+              <div class="position-absolute bottom-0 start-0 end-0 bg-dark bg-opacity-75 text-white p-2">
+                <small>${file.name}</small>
+              </div>
+            `;
+            previewGrid.appendChild(img);
+          }
+          reader.readAsDataURL(file);
+        });
+        
+        filePreview.appendChild(previewGrid);
+      }
+    }
+    
+    // Delete confirmation
+    const confirmDeleteCheck = document.getElementById('confirmDelete');
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    
+    if (confirmDeleteCheck && confirmDeleteBtn) {
+      confirmDeleteCheck.addEventListener('change', function() {
+        confirmDeleteBtn.disabled = !this.checked;
+      });
+    }
+    
+    // Form validation
+    const form = document.getElementById('editForm');
+    form.addEventListener('submit', function(e) {
+      const capacity = parseInt(capacityInput.value) || 0;
+      const occupancy = parseInt(occupancyInput.value) || 0;
+      
+      if (occupancy > capacity) {
+        e.preventDefault();
+        alert('Current occupancy cannot exceed total capacity');
+        occupancyInput.focus();
+      }
+    });
+  });
+</script>
+{% endblock %}

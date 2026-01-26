@@ -1,0 +1,702 @@
+{% extends "base.html" %}
+
+{% block title %}Add New Accommodation - UniStay Admin{% endblock %}
+
+{% block page_css %}
+<style>
+    /* ADD ACCOMMODATION PAGE SPECIFIC STYLES */
+    
+    /* Page Header */
+    .page-header {
+        background: linear-gradient(135deg, rgba(255, 111, 0, 0.1) 0%, rgba(255, 160, 64, 0.05) 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 5px;
+        height: 100%;
+        background: linear-gradient(180deg, var(--primary) 0%, var(--primary-light) 100%);
+    }
+    
+    /* Form Card */
+    .form-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(255, 111, 0, 0.1);
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: var(--secondary);
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control, .form-select {
+        border: 2px solid var(--gray-light);
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 0.25rem rgba(255, 111, 0, 0.1);
+    }
+    
+    /* Input Groups with Icons */
+    .input-group-icon {
+        position: relative;
+    }
+    
+    .input-group-icon .form-control,
+    .input-group-icon .form-select {
+        padding-left: 3rem;
+    }
+    
+    .input-group-icon i {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--primary);
+        z-index: 10;
+    }
+    
+    /* Amenities Picker */
+    .amenities-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 1rem;
+        margin-top: 0.5rem;
+    }
+    
+    .amenity-btn {
+        background: white;
+        border: 2px solid var(--gray-light);
+        border-radius: 12px;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .amenity-btn:hover {
+        border-color: var(--primary);
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(255, 111, 0, 0.1);
+    }
+    
+    .amenity-btn.active {
+        background: linear-gradient(135deg, rgba(255, 111, 0, 0.1) 0%, rgba(255, 160, 64, 0.05) 100%);
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+    
+    .amenity-btn i {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .amenity-btn .checkmark {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        color: var(--primary);
+        opacity: 0;
+        transform: scale(0);
+        transition: all 0.3s ease;
+    }
+    
+    .amenity-btn.active .checkmark {
+        opacity: 1;
+        transform: scale(1);
+    }
+    
+    /* File Upload Styling */
+    .file-upload-area {
+        border: 3px dashed var(--gray-light);
+        border-radius: 15px;
+        padding: 3rem 2rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: var(--light);
+    }
+    
+    .file-upload-area:hover {
+        border-color: var(--primary);
+        background: rgba(255, 111, 0, 0.02);
+    }
+    
+    .file-upload-area.dragover {
+        border-color: var(--primary);
+        background: rgba(255, 111, 0, 0.05);
+        transform: scale(1.01);
+    }
+    
+    .file-upload-icon {
+        font-size: 3rem;
+        color: var(--primary);
+        margin-bottom: 1rem;
+    }
+    
+    /* Image Preview */
+    .image-preview-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .image-preview {
+        position: relative;
+        border-radius: 10px;
+        overflow: hidden;
+        height: 100px;
+    }
+    
+    .image-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .image-preview .remove-btn {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background: rgba(239, 68, 68, 0.9);
+        color: white;
+        border: none;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 0.8rem;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .image-preview:hover .remove-btn {
+        opacity: 1;
+    }
+    
+    /* Price Input Styling */
+    .price-input {
+        position: relative;
+    }
+    
+    .price-input .input-group-text {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+        border: none;
+        font-weight: 600;
+    }
+    
+    /* Form Sections */
+    .form-section {
+        margin-bottom: 2.5rem;
+        padding-bottom: 2rem;
+        border-bottom: 2px solid var(--gray-light);
+    }
+    
+    .form-section:last-child {
+        border-bottom: none;
+    }
+    
+    .section-title {
+        font-weight: 700;
+        color: var(--secondary);
+        margin-bottom: 1.5rem;
+        padding-left: 1rem;
+        border-left: 4px solid var(--primary);
+    }
+    
+    /* Submit Button */
+    .submit-btn {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        border: none;
+        color: white;
+        padding: 1rem 2.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        box-shadow: 0 4px 15px rgba(255, 111, 0, 0.2);
+    }
+    
+    .submit-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(255, 111, 0, 0.3);
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .amenities-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .form-card {
+            padding: 1.5rem;
+        }
+        
+        .page-header {
+            padding: 1.5rem;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .amenities-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    /* Animation for form validation */
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+        20%, 40%, 60%, 80% { transform: translateX(5px); }
+    }
+    
+    .is-invalid {
+        animation: shake 0.5s ease;
+        border-color: var(--danger) !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="fw-bold mb-2">
+                    <i class="fas fa-building-circle-plus text-primary me-2"></i>Add New Accommodation
+                </h1>
+                <p class="text-muted mb-0">Fill in the details below to list a new accommodation for students</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <a href="{{ url_for('admin.manage_accommodations') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-1"></i> Back to List
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Form Card -->
+    <div class="form-card">
+        <form method="POST" enctype="multipart/form-data" id="accommodationForm">
+            {{ form.hidden_tag() }}
+            
+            <!-- Basic Information Section -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-info-circle me-2"></i>Basic Information
+                </h3>
+                
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label class="form-label">Accommodation Title</label>
+                        <div class="input-group-icon">
+                            <i class="fas fa-heading"></i>
+                            {{ form.title(class="form-control", placeholder="e.g., Modern Studio Apartment near Campus") }}
+                        </div>
+                        <small class="text-muted">A catchy title that describes your accommodation</small>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label">Room Type</label>
+                        <div class="input-group-icon">
+                            <i class="fas fa-door-open"></i>
+                            {{ form.room_type(class="form-select") }}
+                        </div>
+                    </div>
+                    
+                    <div class="col-12">
+                        <label class="form-label">Description</label>
+                        <div class="input-group-icon">
+                            <i class="fas fa-align-left"></i>
+                            {{ form.description(class="form-control", rows="5", 
+                                placeholder="Describe the accommodation in detail. Include features, nearby facilities, and any rules...") }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pricing & Location Section -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-money-bill-wave me-2"></i>Pricing & Location
+                </h3>
+                
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label class="form-label">Price per Month (ZAR)</label>
+                        <div class="input-group price-input">
+                            <span class="input-group-text">R</span>
+                            {{ form.price_per_month(class="form-control", type="number", step="0.01", 
+                                placeholder="4500.00", min="0") }}
+                        </div>
+                        <small class="text-muted">Monthly rental price in South African Rand</small>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label">Location</label>
+                        <div class="input-group-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                            {{ form.location(class="form-control", placeholder="e.g., Sandton, Johannesburg") }}
+                        </div>
+                        <small class="text-muted">Include area and city for better search results</small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Capacity & Occupancy Section -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-users me-2"></i>Capacity & Occupancy
+                </h3>
+                
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label class="form-label">Total Capacity</label>
+                        <div class="input-group-icon">
+                            <i class="fas fa-user-friends"></i>
+                            {{ form.capacity(class="form-control", type="number", min="1", 
+                                placeholder="Maximum number of occupants") }}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label">Current Occupancy</label>
+                        <div class="input-group-icon">
+                            <i class="fas fa-user-check"></i>
+                            {{ form.current_occupancy(class="form-control", type="number", min="0", 
+                                placeholder="Currently occupied beds") }}
+                        </div>
+                        <small class="text-muted">Leave as 0 if completely vacant</small>
+                    </div>
+                    
+                    <div class="col-12">
+                        <div class="progress mt-3" style="height: 10px;">
+                            <div id="occupancyProgress" class="progress-bar bg-success" 
+                                 role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-2">
+                            <small>Available: <span id="availableBeds">0</span> beds</small>
+                            <small>Occupancy Rate: <span id="occupancyRate">0%</span></small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Amenities Section -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-star me-2"></i>Amenities
+                </h3>
+                
+                <div class="mb-3">
+                    <label class="form-label">Select available amenities (click to select)</label>
+                    <div class="amenities-grid" id="amenitiesPicker"></div>
+                    {{ form.amenities(class="form-control d-none", id="amenitiesField") }}
+                </div>
+            </div>
+            
+            <!-- Images Section -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-images me-2"></i>Images
+                </h3>
+                
+                <div class="mb-4">
+                    <div class="file-upload-area" id="fileUploadArea">
+                        <div class="file-upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <h5 class="mb-2">Drag & drop images here</h5>
+                        <p class="text-muted mb-3">or click to browse files</p>
+                        <input type="file" name="images" multiple class="form-control d-none" 
+                               id="imageInput" accept="image/*">
+                        <button type="button" class="btn btn-primary" onclick="document.getElementById('imageInput').click()">
+                            <i class="fas fa-folder-open me-1"></i> Browse Images
+                        </button>
+                        <p class="text-muted mt-2 mb-0">Supports JPG, PNG, GIF. Max 5MB per image.</p>
+                    </div>
+                    
+                    <!-- Image Preview Container -->
+                    <div class="image-preview-container" id="imagePreview"></div>
+                </div>
+            </div>
+            
+            <!-- Form Actions -->
+            <div class="text-center pt-4">
+                <button type="submit" class="submit-btn">
+                    <i class="fas fa-plus-circle"></i> Add Accommodation
+                </button>
+                <button type="reset" class="btn btn-outline-secondary ms-3 px-4">
+                    <i class="fas fa-redo"></i> Reset Form
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Amenities Configuration
+    const AMENITIES = [
+        { id: 'wifi', name: 'Wi-Fi', icon: 'fa-wifi' },
+        { id: 'laundry', name: 'Laundry', icon: 'fa-tshirt' },
+        { id: 'kitchen', name: 'Kitchen', icon: 'fa-utensils' },
+        { id: 'parking', name: 'Parking', icon: 'fa-car' },
+        { id: 'gym', name: 'Gym', icon: 'fa-dumbbell' },
+        { id: 'pool', name: 'Pool', icon: 'fa-swimming-pool' },
+        { id: 'tv', name: 'TV', icon: 'fa-tv' },
+        { id: 'ac', name: 'Air Conditioning', icon: 'fa-snowflake' },
+        { id: 'heating', name: 'Heating', icon: 'fa-thermometer-half' },
+        { id: 'security', name: 'Security', icon: 'fa-shield-alt' },
+        { id: 'cleaning', name: 'Cleaning', icon: 'fa-broom' },
+        { id: 'study', name: 'Study Area', icon: 'fa-book' },
+        { id: 'furnished', name: 'Furnished', icon: 'fa-couch' }
+    ];
+    
+    let selectedAmenities = [];
+    const picker = document.getElementById('amenitiesPicker');
+    const field = document.getElementById('amenitiesField');
+    
+    // Render Amenities Picker
+    function renderAmenities() {
+        picker.innerHTML = '';
+        AMENITIES.forEach(amenity => {
+            const isSelected = selectedAmenities.includes(amenity.id);
+            const btn = document.createElement('div');
+            btn.className = `amenity-btn ${isSelected ? 'active' : ''}`;
+            btn.innerHTML = `
+                <i class="fas ${amenity.icon}"></i>
+                <span>${amenity.name}</span>
+                <i class="fas fa-check-circle checkmark"></i>
+            `;
+            btn.onclick = () => toggleAmenity(amenity.id);
+            picker.appendChild(btn);
+        });
+    }
+    
+    // Toggle Amenity Selection
+    function toggleAmenity(amenityId) {
+        if (selectedAmenities.includes(amenityId)) {
+            selectedAmenities = selectedAmenities.filter(id => id !== amenityId);
+        } else {
+            selectedAmenities.push(amenityId);
+        }
+        field.value = selectedAmenities.join(', ');
+        renderAmenities();
+    }
+    
+    // Initialize Amenities from Existing Value (if editing)
+    document.addEventListener('DOMContentLoaded', function() {
+        const existingAmenities = field.value;
+        if (existingAmenities) {
+            selectedAmenities = existingAmenities.split(',').map(a => a.trim());
+            renderAmenities();
+        } else {
+            renderAmenities();
+        }
+    });
+    
+    // File Upload Drag & Drop
+    const fileUploadArea = document.getElementById('fileUploadArea');
+    const imageInput = document.getElementById('imageInput');
+    const imagePreview = document.getElementById('imagePreview');
+    let uploadedImages = [];
+    
+    // Drag & Drop Events
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        fileUploadArea.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    ['dragenter', 'dragover'].forEach(eventName => {
+        fileUploadArea.addEventListener(eventName, highlight, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+        fileUploadArea.addEventListener(eventName, unhighlight, false);
+    });
+    
+    function highlight() {
+        fileUploadArea.classList.add('dragover');
+    }
+    
+    function unhighlight() {
+        fileUploadArea.classList.remove('dragover');
+    }
+    
+    // Handle File Drop
+    fileUploadArea.addEventListener('drop', handleDrop, false);
+    
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        handleFiles(files);
+    }
+    
+    // Handle File Input Change
+    imageInput.addEventListener('change', function(e) {
+        handleFiles(this.files);
+    });
+    
+    // Process Files
+    function handleFiles(files) {
+        [...files].forEach(file => {
+            if (file.type.startsWith('image/')) {
+                previewImage(file);
+            }
+        });
+    }
+    
+    // Preview Image
+    function previewImage(file) {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onloadend = function() {
+            const imageId = Date.now() + Math.random();
+            uploadedImages.push({ id: imageId, file: file });
+            
+            const preview = document.createElement('div');
+            preview.className = 'image-preview';
+            preview.innerHTML = `
+                <img src="${reader.result}" alt="Preview">
+                <button type="button" class="remove-btn" onclick="removeImage('${imageId}')">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            imagePreview.appendChild(preview);
+        };
+    }
+    
+    // Remove Image
+    window.removeImage = function(imageId) {
+        uploadedImages = uploadedImages.filter(img => img.id !== imageId);
+        const previews = imagePreview.children;
+        for (let preview of previews) {
+            if (preview.querySelector('img').src.includes(imageId)) {
+                preview.remove();
+                break;
+            }
+        }
+    };
+    
+    // Occupancy Calculator
+    const capacityInput = document.getElementById('{{ form.capacity.id }}');
+    const occupancyInput = document.getElementById('{{ form.current_occupancy.id }}');
+    const occupancyProgress = document.getElementById('occupancyProgress');
+    const availableBeds = document.getElementById('availableBeds');
+    const occupancyRate = document.getElementById('occupancyRate');
+    
+    function updateOccupancy() {
+        const capacity = parseInt(capacityInput.value) || 0;
+        const occupancy = parseInt(occupancyInput.value) || 0;
+        const available = capacity - occupancy;
+        const rate = capacity > 0 ? Math.min(100, Math.round((occupancy / capacity) * 100)) : 0;
+        
+        availableBeds.textContent = available > 0 ? available : 0;
+        occupancyRate.textContent = rate + '%';
+        occupancyProgress.style.width = rate + '%';
+        
+        // Update progress bar color based on occupancy
+        if (rate < 50) {
+            occupancyProgress.className = 'progress-bar bg-success';
+        } else if (rate < 80) {
+            occupancyProgress.className = 'progress-bar bg-warning';
+        } else {
+            occupancyProgress.className = 'progress-bar bg-danger';
+        }
+    }
+    
+    capacityInput.addEventListener('input', updateOccupancy);
+    occupancyInput.addEventListener('input', updateOccupancy);
+    
+    // Initialize occupancy display
+    document.addEventListener('DOMContentLoaded', updateOccupancy);
+    
+    // Form Validation
+    const form = document.getElementById('accommodationForm');
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        // Clear previous errors
+        document.querySelectorAll('.is-invalid').forEach(el => {
+            el.classList.remove('is-invalid');
+        });
+        
+        // Validate required fields
+        const requiredFields = form.querySelectorAll('[required]');
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                field.classList.add('is-invalid');
+                isValid = false;
+            }
+        });
+        
+        // Validate capacity vs occupancy
+        const capacity = parseInt(capacityInput.value) || 0;
+        const occupancy = parseInt(occupancyInput.value) || 0;
+        if (occupancy > capacity) {
+            occupancyInput.classList.add('is-invalid');
+            isValid = false;
+            alert('Current occupancy cannot exceed total capacity!');
+        }
+        
+        // Validate price
+        const price = parseFloat(document.getElementById('{{ form.price_per_month.id }}').value) || 0;
+        if (price <= 0) {
+            document.getElementById('{{ form.price_per_month.id }}').classList.add('is-invalid');
+            isValid = false;
+        }
+        
+        if (!isValid) {
+            e.preventDefault();
+            // Scroll to first error
+            const firstError = form.querySelector('.is-invalid');
+            if (firstError) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        } else {
+            // Show loading state on submit button
+            const submitBtn = form.querySelector('button[type="submit"]');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding Accommodation...';
+            submitBtn.disabled = true;
+        }
+    });
+</script>
+{% endblock %}

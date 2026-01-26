@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Redirecting to Payment - UniStay{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card card-shadow p-5 text-center">
+      <div class="mb-4">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+      <h3 class="text-orange mb-3">Redirecting to Secure Payment...</h3>
+      <p class="lead mb-4">You are being redirected to Stripe Checkout to complete your payment of <strong>R{{ booking.total_price }}</strong>.</p>
+      
+      <div class="alert alert-info">
+        <i class="fa fa-info-circle"></i>
+        <strong>TEST MODE:</strong> Use card number <strong>4242 4242 4242 4242</strong> with any future expiry date and any CVC.
+      </div>
+      
+      <p class="text-muted mt-4">If you are not redirected automatically, <a href="#" id="redirect-link" class="btn btn-primary">Click Here</a></p>
+      
+      <script>
+        // Auto-redirect after 2 seconds
+        setTimeout(function() {
+          window.location.href = "{{ url_for('bookings.payment', booking_id=booking.id) }}";
+        }, 2000);
+        
+        document.getElementById('redirect-link').href = "{{ url_for('bookings.payment', booking_id=booking.id) }}";
+      </script>
+    </div>
+  </div>
+</div>
+{% endblock %}

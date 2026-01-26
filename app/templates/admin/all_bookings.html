@@ -1,0 +1,594 @@
+{% extends "base.html" %}
+
+{% block title %}All Bookings - UniStay Admin{% endblock %}
+
+{% block page_css %}
+<style>
+  /* BOOKINGS PAGE SPECIFIC STYLES */
+  
+  /* Page Header */
+  .page-header {
+    background: linear-gradient(135deg, rgba(255, 111, 0, 0.05) 0%, rgba(255, 160, 64, 0.05) 100%);
+    border-radius: 15px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border-left: 4px solid var(--primary);
+  }
+  
+  /* Stats Cards */
+  .booking-stats-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--gray-light);
+    transition: all 0.3s ease;
+  }
+  
+  .booking-stats-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    border-color: var(--primary-light);
+  }
+  
+  .stats-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary);
+    line-height: 1;
+  }
+  
+  /* Enhanced Table */
+  .bookings-table-container {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    margin-top: 2rem;
+  }
+  
+  .table-header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    padding: 1.5rem;
+    border-bottom: none;
+  }
+  
+  .table-header h5 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .table-responsive {
+    border-radius: 0 0 15px 15px;
+  }
+  
+  .table {
+    margin: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+  
+  .table thead th {
+    background-color: var(--light);
+    border: none;
+    padding: 1.25rem 1.5rem;
+    font-weight: 600;
+    color: var(--secondary);
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--gray-light);
+  }
+  
+  .table tbody td {
+    padding: 1.25rem 1.5rem;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--gray-light);
+    transition: all 0.2s ease;
+  }
+  
+  .table tbody tr {
+    transition: all 0.3s ease;
+  }
+  
+  .table tbody tr:hover {
+    background-color: rgba(255, 111, 0, 0.03);
+    transform: translateX(5px);
+  }
+  
+  /* Status Badges */
+  .status-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 2px solid transparent;
+  }
+  
+  .status-pending {
+    background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+    color: #92400E;
+    border-color: #FBBF24;
+  }
+  
+  .status-approved {
+    background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%);
+    color: #1E40AF;
+    border-color: #60A5FA;
+  }
+  
+  .status-paid {
+    background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%);
+    color: #065F46;
+    border-color: #10B981;
+  }
+  
+  .status-cancelled {
+    background: linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%);
+    color: #991B1B;
+    border-color: #EF4444;
+  }
+  
+  /* Status Selector */
+  .status-selector {
+    padding: 0.5rem 2rem 0.5rem 1rem;
+    border: 2px solid var(--gray-light);
+    border-radius: 10px;
+    background: white;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23FF6F00' viewBox='0 0 16 16'%3E%3Cpath d='M8 11.5l4-4H4l4 4z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 16px 12px;
+  }
+  
+  .status-selector:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(255, 111, 0, 0.1);
+  }
+  
+  /* Student Info */
+  .student-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  
+  .student-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  
+  .student-details {
+    line-height: 1.2;
+  }
+  
+  .student-name {
+    font-weight: 600;
+    color: var(--secondary);
+  }
+  
+  .student-number {
+    font-size: 0.85rem;
+    color: var(--gray-medium);
+  }
+  
+  /* Quick Actions */
+  .quick-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  .action-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--gray-light);
+    color: var(--secondary);
+    border: none;
+    transition: all 0.3s ease;
+  }
+  
+  .action-btn:hover {
+    background: var(--primary);
+    color: white;
+    transform: translateY(-2px);
+  }
+  
+  /* Filter Section */
+  .filter-section {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--gray-light);
+  }
+  
+  .filter-btn {
+    background: var(--light);
+    border: 2px solid var(--gray-light);
+    color: var(--secondary);
+    padding: 0.5rem 1.5rem;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+  }
+  
+  .filter-btn:hover, .filter-btn.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+  }
+  
+  /* Empty State */
+  .empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: var(--gray-medium);
+  }
+  
+  .empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    color: var(--gray-light);
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .table-header {
+      padding: 1rem;
+    }
+    
+    .table thead th,
+    .table tbody td {
+      padding: 1rem;
+    }
+    
+    .status-selector {
+      min-width: 120px;
+    }
+    
+    .quick-actions {
+      flex-direction: column;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <h1 class="fw-bold mb-2">All Bookings</h1>
+        <p class="text-muted mb-0">Manage and monitor all accommodation bookings across the platform</p>
+      </div>
+      <div>
+        <button class="btn btn-primary btn-lg rounded-pill px-4 shadow-sm" onclick="window.print()">
+          <i class="fas fa-print me-2"></i>Print Report
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Stats Cards -->
+  <div class="row">
+    <div class="col-xl-3 col-md-6">
+      <div class="booking-stats-card">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <h6 class="text-muted mb-2">Total Bookings</h6>
+            <div class="stats-number">{{ bookings|length }}</div>
+          </div>
+          <i class="fas fa-calendar-check fa-2x text-primary opacity-75"></i>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6">
+      <div class="booking-stats-card">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <h6 class="text-muted mb-2">Pending</h6>
+            <div class="stats-number">
+              {{ bookings|selectattr('status', 'equalto', 'pending')|list|length }}
+            </div>
+          </div>
+          <i class="fas fa-clock fa-2x text-warning opacity-75"></i>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6">
+      <div class="booking-stats-card">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <h6 class="text-muted mb-2">Approved</h6>
+            <div class="stats-number">
+              {{ bookings|selectattr('status', 'equalto', 'approved')|list|length }}
+            </div>
+          </div>
+          <i class="fas fa-check-circle fa-2x text-info opacity-75"></i>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6">
+      <div class="booking-stats-card">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <h6 class="text-muted mb-2">Paid</h6>
+            <div class="stats-number">
+              {{ bookings|selectattr('status', 'equalto', 'paid')|list|length }}
+            </div>
+          </div>
+          <i class="fas fa-wallet fa-2x text-success opacity-75"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Filter Section -->
+  <div class="filter-section">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h5 class="fw-bold mb-3">Filter Bookings</h5>
+        <div class="d-flex flex-wrap gap-2">
+          <a href="{{ url_for('admin.view_all_bookings', status='all') }}" 
+             class="filter-btn {% if request.args.get('status', 'all') == 'all' %}active{% endif %}">
+            All Bookings
+          </a>
+          <a href="{{ url_for('admin.view_all_bookings', status='pending') }}" 
+             class="filter-btn {% if request.args.get('status') == 'pending' %}active{% endif %}">
+            <i class="fas fa-clock me-1"></i> Pending
+          </a>
+          <a href="{{ url_for('admin.view_all_bookings', status='approved') }}" 
+             class="filter-btn {% if request.args.get('status') == 'approved' %}active{% endif %}">
+            <i class="fas fa-check-circle me-1"></i> Approved
+          </a>
+          <a href="{{ url_for('admin.view_all_bookings', status='paid') }}" 
+             class="filter-btn {% if request.args.get('status') == 'paid' %}active{% endif %}">
+            <i class="fas fa-wallet me-1"></i> Paid
+          </a>
+          <a href="{{ url_for('admin.view_all_bookings', status='cancelled') }}" 
+             class="filter-btn {% if request.args.get('status') == 'cancelled' %}active{% endif %}">
+            <i class="fas fa-times-circle me-1"></i> Cancelled
+          </a>
+        </div>
+      </div>
+      <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <div class="input-group">
+          <span class="input-group-text bg-light border-end-0">
+            <i class="fas fa-search text-muted"></i>
+          </span>
+          <input type="text" class="form-control border-start-0" placeholder="Search bookings..." id="bookingSearch">
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Bookings Table -->
+  <div class="bookings-table-container">
+    <div class="table-header">
+      <h5>
+        <i class="fas fa-list-check me-2"></i>
+        {% if request.args.get('status') and request.args.get('status') != 'all' %}
+          {{ request.args.get('status')|title }} Bookings
+        {% else %}
+          All Bookings
+        {% endif %}
+        <span class="badge bg-light text-dark ms-2">{{ bookings|length }}</span>
+      </h5>
+    </div>
+    
+    <div class="table-responsive">
+      <table class="table table-hover" id="bookingsTable">
+        <thead>
+          <tr>
+            <th>Booking ID</th>
+            <th>Student</th>
+            <th>Accommodation</th>
+            <th>Duration</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th>Created Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for b in bookings %}
+          <tr data-status="{{ b.status }}">
+            <td class="fw-bold">#{{ b.id }}</td>
+            <td>
+              <div class="student-info">
+                {% if b.user.profile_picture %}
+                  <img src="{{ url_for('static', filename=b.user.profile_picture) }}" 
+                       class="student-avatar" alt="{{ b.user.full_name }}">
+                {% else %}
+                  <div class="student-avatar bg-primary text-white d-flex align-items-center justify-content-center">
+                    {{ b.user.full_name[0]|upper }}
+                  </div>
+                {% endif %}
+                <div class="student-details">
+                  <div class="student-name">{{ b.user.full_name }}</div>
+                  <div class="student-number">{{ b.user.student_number }}</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="fw-semibold">{{ b.accommodation.title|truncate(30) }}</div>
+              <small class="text-muted">{{ b.accommodation.room_type|title }}</small>
+            </td>
+            <td>
+              <div class="fw-semibold">{{ b.duration|title }}</div>
+              {% if b.period %}
+                <small class="text-muted">{{ b.period }}</small>
+              {% endif %}
+            </td>
+            <td>
+              <div class="fw-bold">R{{ "%.2f"|format(b.total_price) }}</div>
+            </td>
+            <td>
+              {% if b.status == 'pending' %}
+                <span class="status-badge status-pending">
+                  <i class="fas fa-clock"></i> Pending
+                </span>
+              {% elif b.status == 'approved' %}
+                <span class="status-badge status-approved">
+                  <i class="fas fa-check-circle"></i> Approved
+                </span>
+              {% elif b.status == 'paid' %}
+                <span class="status-badge status-paid">
+                  <i class="fas fa-wallet"></i> Paid
+                </span>
+              {% elif b.status == 'cancelled' %}
+                <span class="status-badge status-cancelled">
+                  <i class="fas fa-times-circle"></i> Cancelled
+                </span>
+              {% endif %}
+            </td>
+            <td>
+              <div>{{ b.created_at.strftime('%d %b %Y') }}</div>
+              <small class="text-muted">{{ b.created_at.strftime('%I:%M %p') }}</small>
+            </td>
+            <td>
+              <div class="d-flex gap-2">
+                <form method="POST" action="{{ url_for('admin.update_booking_status', id=b.id) }}" 
+                      class="d-inline" onsubmit="return confirmStatusChange('{{ b.status }}', this)">
+                  <select name="status" class="status-selector" onchange="this.form.submit()">
+                    <option value="pending" {% if b.status=='pending' %}selected{% endif %}>Pending</option>
+                    <option value="approved" {% if b.status=='approved' %}selected{% endif %}>Approved</option>
+                    <option value="paid" {% if b.status=='paid' %}selected{% endif %}>Paid</option>
+                    <option value="cancelled" {% if b.status=='cancelled' %}selected{% endif %}>Cancelled</option>
+                  </select>
+                </form>
+                <a href="{{ url_for('bookings.view_booking', booking_id=b.id) }}" 
+                   class="action-btn" title="View Details">
+                  <i class="fas fa-eye"></i>
+                </a>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="8">
+              <div class="empty-state">
+                <i class="fas fa-calendar-times empty-icon"></i>
+                <h4 class="text-muted">No Bookings Found</h4>
+                <p class="text-muted">There are no bookings matching your current filter.</p>
+                <a href="{{ url_for('admin.view_all_bookings', status='all') }}" class="btn btn-primary mt-2">
+                  <i class="fas fa-redo me-1"></i> Reset Filters
+                </a>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  <!-- Summary Card -->
+  {% if bookings %}
+  <div class="row mt-4">
+    <div class="col-lg-6">
+      <div class="booking-stats-card">
+        <h6 class="fw-bold mb-3">Total Revenue</h6>
+        <div class="d-flex align-items-center">
+          <i class="fas fa-chart-line fa-3x text-success me-3"></i>
+          <div>
+            <div class="fs-1 fw-bold text-success">
+              R{{ "%0.2f"|format(bookings|selectattr('status', 'equalto', 'paid')|map(attribute='total_price')|sum) }}
+            </div>
+            <p class="text-muted mb-0">From paid bookings only</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="booking-stats-card">
+        <h6 class="fw-bold mb-3">Quick Actions</h6>
+        <div class="d-flex gap-2">
+          <button class="btn btn-outline-primary flex-fill">
+            <i class="fas fa-download me-2"></i> Export CSV
+          </button>
+          <button class="btn btn-outline-primary flex-fill">
+            <i class="fas fa-envelope me-2"></i> Send Reminders
+          </button>
+          <button class="btn btn-outline-primary flex-fill">
+            <i class="fas fa-chart-bar me-2"></i> Analytics
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Search functionality
+    const searchInput = document.getElementById('bookingSearch');
+    const tableRows = document.querySelectorAll('#bookingsTable tbody tr');
+    
+    searchInput.addEventListener('keyup', function() {
+      const searchTerm = this.value.toLowerCase();
+      
+      tableRows.forEach(row => {
+        const rowText = row.textContent.toLowerCase();
+        row.style.display = rowText.includes(searchTerm) ? '' : 'none';
+      });
+    });
+    
+    // Status change confirmation
+    window.confirmStatusChange = function(currentStatus, form) {
+      const newStatus = form.querySelector('select').value;
+      if (currentStatus !== newStatus) {
+        return confirm(`Are you sure you want to change the status from ${currentStatus} to ${newStatus}?`);
+      }
+      return true;
+    };
+    
+    // Add loading animation to status selector
+    document.querySelectorAll('.status-selector').forEach(select => {
+      select.addEventListener('change', function() {
+        this.disabled = true;
+        this.nextElementSibling?.remove(); // Remove any existing spinner
+        
+        const spinner = document.createElement('span');
+        spinner.className = 'spinner-border spinner-border-sm ms-2';
+        spinner.style.verticalAlign = 'middle';
+        this.insertAdjacentElement('afterend', spinner);
+      });
+    });
+    
+    // Filter highlighting
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentFilter = urlParams.get('status') || 'all';
+    
+    // Animation for table rows
+    tableRows.forEach((row, index) => {
+      row.style.animationDelay = `${index * 0.05}s`;
+      row.classList.add('animate__animated', 'animate__fadeIn');
+    });
+  });
+</script>
+{% endblock %}

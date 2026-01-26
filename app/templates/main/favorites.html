@@ -1,0 +1,643 @@
+{% extends "base.html" %}
+{% from "macros.html" import pagination_widget %}
+{% block title %}My Favorites - UniStay{% endblock %}
+
+{% block page_css %}
+<style>
+    /* Favorites Page Specific Styles - Matching accommodations.html structure */
+    .page-header {
+        background: linear-gradient(135deg, rgba(255, 111, 0, 0.1) 0%, rgba(255, 160, 64, 0.05) 100%);
+        padding: 3rem 0;
+        border-radius: 0 0 30px 30px;
+        margin-bottom: 3rem;
+    }
+    
+    /* Enhanced Accommodation Cards - Same as accommodations.html */
+    .accommodation-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid rgba(255, 111, 0, 0.1);
+        height: 100%;
+        position: relative;
+    }
+    
+    .accommodation-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(255, 111, 0, 0.15);
+        border-color: var(--primary-light);
+    }
+    
+    .card-image-container {
+        position: relative;
+        overflow: hidden;
+        height: 200px;
+    }
+    
+    .card-image-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    
+    .accommodation-card:hover .card-image-container img {
+        transform: scale(1.05);
+    }
+    
+    .image-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: rgba(255, 111, 0, 0.9);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        backdrop-filter: blur(10px);
+        z-index: 5;
+    }
+    
+    .occupancy-badge {
+        position: absolute;
+        bottom: 15px;
+        left: 15px;
+        background: rgba(16, 185, 129, 0.9);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        backdrop-filter: blur(10px);
+        z-index: 5;
+    }
+    
+    .card-body {
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        height: calc(100% - 200px);
+    }
+    
+    .accommodation-title {
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 700;
+        color: var(--secondary);
+        font-size: 1.25rem;
+        margin-bottom: 0.5rem;
+        line-height: 1.3;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .location-text {
+        color: var(--secondary);
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+        font-weight: 500;
+        opacity: 0.8;
+    }
+    
+    .location-text i {
+        color: var(--primary);
+        margin-right: 0.5rem;
+    }
+    
+    .description-text {
+        color: var(--secondary);
+        font-size: 0.95rem;
+        line-height: 1.5;
+        flex-grow: 1;
+        margin-bottom: 1rem;
+        opacity: 0.8;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .price-and-action {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: auto;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(255, 111, 0, 0.1);
+    }
+    
+    .price-tag {
+        background: linear-gradient(135deg, #FF6F00 0%, #FFA040 100%);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 1.25rem;
+        display: inline-block;
+        box-shadow: 0 4px 12px rgba(255, 111, 0, 0.2);
+    }
+    
+    .price-tag small {
+        font-size: 0.8rem;
+        opacity: 0.9;
+    }
+    
+    .view-book-button {
+        background: linear-gradient(135deg, #FF6F00 0%, #FFA040 100%);
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+    
+    .view-book-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(255, 111, 0, 0.3);
+        color: white;
+    }
+    
+    /* Remove button styled as heart icon (top left) */
+    .remove-favorite-btn {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        background: #dc3545;
+        border: 2px solid #dc3545;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+        z-index: 10;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        color: white;
+    }
+    
+    .remove-favorite-btn:hover {
+        transform: scale(1.15);
+        background: #c82333;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    }
+    
+    .remove-favorite-btn i {
+        color: white;
+        font-size: 1.2rem;
+        transition: all 0.3s ease;
+    }
+    
+    .amenities-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin: 1rem 0;
+    }
+    
+    .amenity-badge {
+        background: rgba(255, 111, 0, 0.1);
+        color: var(--secondary);
+        padding: 0.35rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        transition: all 0.2s ease;
+        border: 1px solid rgba(255, 111, 0, 0.2);
+    }
+    
+    .amenity-badge:hover {
+        background: var(--primary);
+        color: white;
+        transform: translateY(-2px);
+        border-color: var(--primary);
+    }
+    
+    .amenity-badge i {
+        font-size: 0.8rem;
+    }
+    
+    .card-footer {
+        border-top: 1px solid rgba(255, 111, 0, 0.1);
+        padding: 1rem 1.5rem;
+        background: rgba(255, 160, 64, 0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .rating-container {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .rating-stars {
+        color: #FFD700;
+        font-size: 0.9rem;
+        display: flex;
+        gap: 0.1rem;
+    }
+    
+    .rating-number {
+        font-weight: 600;
+        color: var(--secondary);
+        font-size: 0.9rem;
+    }
+    
+    .review-count {
+        color: var(--gray-medium);
+        font-size: 0.85rem;
+    }
+    
+    /* Empty State - Same as accommodations.html */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        border: 2px dashed rgba(255, 111, 0, 0.3);
+    }
+    
+    .empty-state i {
+        font-size: 3rem;
+        color: var(--primary-light);
+        margin-bottom: 1rem;
+    }
+    
+    .empty-state h3 {
+        color: var(--secondary);
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+    
+    .empty-state p {
+        color: var(--gray-medium);
+        max-width: 400px;
+        margin: 0 auto 1.5rem;
+    }
+    
+    /* Results Counter */
+    .results-counter {
+        background: linear-gradient(135deg, rgba(255, 111, 0, 0.1) 0%, rgba(255, 160, 64, 0.05) 100%);
+        border-radius: 10px;
+        padding: 0.75rem 1.5rem;
+        border: 1px solid rgba(255, 111, 0, 0.2);
+        margin-bottom: 1.5rem;
+        display: inline-block;
+    }
+    
+    /* Heart icon pulse animation for header */
+    .heart-icon-header {
+        color: #dc3545;
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+    
+    /* Loading Spinner for Remove */
+    .remove-loading {
+        display: none;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 20px;
+        height: 20px;
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid white;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: translate(-50%, -50%) rotate(0deg); }
+        100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+    
+    /* Quick View Button */
+    .quick-view-btn {
+        position: absolute;
+        bottom: 15px;
+        right: 15px;
+        background: rgba(255, 255, 255, 0.95);
+        color: var(--primary);
+        border: 1px solid var(--primary);
+        border-radius: 20px;
+        padding: 0.25rem 1rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        backdrop-filter: blur(10px);
+        z-index: 5;
+        opacity: 0;
+        transform: translateY(10px);
+        transition: all 0.3s ease;
+    }
+    
+    .accommodation-card:hover .quick-view-btn {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    .quick-view-btn:hover {
+        background: var(--primary);
+        color: white;
+    }
+    
+    /* Animation for cards */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .accommodation-card {
+        animation: fadeInUp 0.5s ease-out;
+    }
+    
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 2rem 0;
+            border-radius: 0 0 20px 20px;
+        }
+        
+        .card-image-container {
+            height: 180px;
+        }
+        
+        .amenities-container {
+            justify-content: center;
+        }
+        
+        .price-and-action {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: stretch;
+        }
+        
+        .view-book-button {
+            text-align: center;
+            justify-content: center;
+        }
+        
+        .card-footer {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .results-counter {
+            text-align: center;
+            display: block;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-5 fw-bold mb-3 text-gradient">
+                    <i class="fas fa-heart heart-icon-header me-3"></i>
+                    My Favorite Accommodations
+                </h1>
+                <p class="lead mb-0">Your curated collection of preferred student accommodations</p>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                <div class="results-counter">
+                    <span class="text-muted me-2">Saved</span>
+                    <strong class="text-primary">{{ accommodations|length }}</strong>
+                    <span class="text-muted ms-2">properties</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Accommodation Grid -->
+    {% if accommodations %}
+    <div class="row g-4">
+        {% for acc in accommodations %}
+        <div class="col-xl-4 col-lg-6 col-md-6">
+            <div class="accommodation-card">
+                <!-- Image Container -->
+                <div class="card-image-container">
+                    <img src="{{ url_for('static', filename=acc.images[0]) if acc.images else url_for('static', filename='images/default-accommodation.jpg') }}"
+                         alt="{{ acc.title }}" loading="lazy">
+                    
+                    <!-- Remove from Favorites Button (positioned like heart in accommodations) -->
+                    <form action="{{ url_for('main.toggle_favorite', accommodation_id=acc.id) }}" 
+                          method="POST" class="d-inline" id="remove-form-{{ acc.id }}">
+                        <button type="submit" class="remove-favorite-btn" 
+                                onclick="return confirmRemove(event, {{ acc.id }})"
+                                title="Remove from favorites">
+                            <i class="fas fa-trash"></i>
+                            <div class="remove-loading"></div>
+                        </button>
+                    </form>
+                    
+                    <span class="image-badge">
+                        <i class="fas fa-bed me-1"></i>{{ acc.room_type|title }}
+                    </span>
+                    
+                    {% if acc.current_occupancy < acc.capacity %}
+                    <span class="occupancy-badge">
+                        <i class="fas fa-user-check me-1"></i>{{ acc.capacity - acc.current_occupancy }} spots left
+                    </span>
+                    {% else %}
+                    <span class="occupancy-badge" style="background: rgba(220, 53, 69, 0.9);">
+                        <i class="fas fa-times me-1"></i>Fully Booked
+                    </span>
+                    {% endif %}
+                    
+                    <button class="quick-view-btn" onclick="window.location.href='{{ url_for('main.accommodation_detail', id=acc.id) }}'">
+                        <i class="fas fa-eye me-1"></i>Quick View
+                    </button>
+                </div>
+                
+                <!-- Card Body -->
+                <div class="card-body">
+                    <h3 class="accommodation-title">{{ acc.title }}</h3>
+                    <p class="location-text">
+                        <i class="fas fa-map-marker-alt"></i>{{ acc.location }}
+                    </p>
+                    
+                    <!-- Star Rating -->
+                    {% if acc.reviews|length > 0 %}
+                    <div class="rating-container mb-2">
+                        <div class="rating-stars">
+                            {% for i in range(5) %}
+                            {% if i < acc.average_rating %}
+                            <i class="fas fa-star"></i>
+                            {% elif i < acc.average_rating|round %}
+                            <i class="fas fa-star-half-alt"></i>
+                            {% else %}
+                            <i class="far fa-star"></i>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        <span class="rating-number">{{ acc.average_rating|round(1) }}</span>
+                        <span class="review-count">({{ acc.reviews|length }})</span>
+                    </div>
+                    {% endif %}
+                    
+                    <p class="description-text">{{ acc.description[:120] }}...</p>
+                    
+                    <!-- Amenities -->
+                    {% if acc.amenities %}
+                    <div class="amenities-container">
+                        {% for amenity in acc.amenities[:3] %}
+                        <span class="amenity-badge" title="{{ amenity|title }}">
+                            <i class="fas fa-{{ amenities_icons.get(amenity, 'check') }}"></i>
+                            {{ amenity|title }}
+                        </span>
+                        {% endfor %}
+                        {% if acc.amenities|length > 3 %}
+                        <span class="amenity-badge" title="More amenities">
+                            <i class="fas fa-plus"></i>
+                            +{{ acc.amenities|length - 3 }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Price and View & Book Button -->
+                    <div class="price-and-action">
+                        <div class="price-tag">
+                            R{{ "{:,.0f}".format(acc.price_per_month) }}<small>/month</small>
+                        </div>
+                        <a href="{{ url_for('main.accommodation_detail', id=acc.id) }}" class="view-book-button">
+                            <i class="fas fa-eye me-1"></i>View Details
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Card Footer -->
+                <div class="card-footer">
+                    <div>
+                        <i class="fas fa-users text-primary me-1"></i>
+                        <small>{{ acc.current_occupancy }}/{{ acc.capacity }} occupied</small>
+                    </div>
+                    <small class="text-muted">
+                        <i class="fas fa-heart text-danger me-1"></i>Saved
+                    </small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Browse More Button -->
+    <div class="text-center mt-5">
+        <a href="{{ url_for('main.accommodations') }}" class="btn btn-primary btn-lg">
+            <i class="fas fa-search me-2"></i>Browse More Accommodations
+        </a>
+    </div>
+    
+    {% else %}
+    <!-- Empty State -->
+    <div class="empty-state">
+        <i class="fas fa-heart fa-3x mb-3"></i>
+        <h3>No Favorites Yet</h3>
+        <p>Start building your collection! Click the heart icon on any accommodation to save it here for quick access.</p>
+        <a href="{{ url_for('main.accommodations') }}" class="btn btn-primary btn-lg">
+            <i class="fas fa-search me-2"></i>Browse Accommodations
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Add smooth animations to cards on scroll
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.accommodation-card');
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, {
+            threshold: 0.1
+        });
+        
+        cards.forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            observer.observe(card);
+        });
+    });
+
+    // Improved Remove Favorite function with loading state
+    function confirmRemove(event, accommodationId) {
+        event.preventDefault();
+        
+        if (!confirm('Remove this accommodation from your favorites?')) {
+            return false;
+        }
+        
+        const form = document.getElementById('remove-form-' + accommodationId);
+        const button = form.querySelector('.remove-favorite-btn');
+        const loading = button.querySelector('.remove-loading');
+        const icon = button.querySelector('i');
+        
+        // Show loading state
+        loading.style.display = 'block';
+        icon.style.opacity = '0.3';
+        button.style.pointerEvents = 'none';
+        
+        // Submit form after brief delay for UX
+        setTimeout(() => {
+            form.submit();
+        }, 300);
+        
+        return false;
+    }
+    
+    // Add hover effect to cards
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.accommodation-card');
+        cards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.zIndex = '100';
+            });
+            card.addEventListener('mouseleave', function() {
+                this.style.zIndex = '';
+            });
+        });
+    });
+</script>
+{% endblock %}

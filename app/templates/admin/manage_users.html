@@ -1,0 +1,612 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Users - UniStay Admin{% endblock %}
+
+{% block page_css %}
+<style>
+  /* MANAGE USERS PAGE SPECIFIC STYLES */
+  
+  .page-header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    border-radius: 20px;
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+    color: white;
+    box-shadow: 0 10px 30px rgba(255, 111, 0, 0.2);
+  }
+  
+  .page-header h1 {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: white;
+  }
+  
+  .page-header .lead {
+    opacity: 0.9;
+    font-size: 1.1rem;
+  }
+  
+  /* Stats Cards */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+  }
+  
+  .stat-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.75rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+  }
+  
+  .stat-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.1);
+  }
+  
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 6px;
+    height: 100%;
+    background: linear-gradient(to bottom, var(--primary), var(--primary-dark));
+  }
+  
+  .stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+  }
+  
+  .stat-icon.users {
+    background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+    color: white;
+  }
+  
+  .stat-icon.admins {
+    background: linear-gradient(135deg, #10B981, #059669);
+    color: white;
+  }
+  
+  .stat-icon.regular {
+    background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+    color: white;
+  }
+  
+  .stat-icon.new {
+    background: linear-gradient(135deg, #F59E0B, #D97706);
+    color: white;
+  }
+  
+  .stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 0.25rem;
+    color: var(--secondary);
+  }
+  
+  .stat-label {
+    color: var(--gray-medium);
+    font-size: 0.95rem;
+    font-weight: 500;
+  }
+  
+  /* Users Table Card */
+  .table-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    border: none;
+  }
+  
+  .table-header {
+    background: linear-gradient(90deg, var(--primary), var(--primary-light));
+    color: white;
+    padding: 1.5rem 2rem;
+  }
+  
+  .table-header h3 {
+    margin: 0;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  
+  .user-count {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+  
+  /* Enhanced Table */
+  .users-table {
+    margin: 0;
+  }
+  
+  .users-table thead th {
+    background-color: var(--gray-light);
+    border: none;
+    padding: 1.25rem 2rem;
+    font-weight: 600;
+    color: var(--secondary);
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+  }
+  
+  .users-table tbody tr {
+    border-bottom: 1px solid var(--gray-light);
+    transition: all 0.2s ease;
+  }
+  
+  .users-table tbody tr:hover {
+    background-color: rgba(255, 111, 0, 0.04);
+    transform: translateX(5px);
+  }
+  
+  .users-table tbody td {
+    padding: 1.25rem 2rem;
+    vertical-align: middle;
+    border: none;
+  }
+  
+  /* User Avatar */
+  .user-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+  
+  .user-avatar:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+  }
+  
+  /* Role Badges */
+  .role-badge {
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .role-badge.admin {
+    background: linear-gradient(135deg, #10B981, #059669);
+    color: white;
+  }
+  
+  .role-badge.user {
+    background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+    color: white;
+  }
+  
+  .badge-you {
+    background: var(--accent);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin-left: 0.5rem;
+  }
+  
+  /* Action Buttons */
+  .action-buttons {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  
+  .btn-action {
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+  }
+  
+  .btn-promote {
+    background: linear-gradient(135deg, #10B981, #059669);
+    color: white;
+  }
+  
+  .btn-promote:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+  }
+  
+  .btn-demote {
+    background: linear-gradient(135deg, #F59E0B, #D97706);
+    color: white;
+  }
+  
+  .btn-demote:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(245, 158, 11, 0.3);
+  }
+  
+  .btn-delete {
+    background: linear-gradient(135deg, #EF4444, #DC2626);
+    color: white;
+  }
+  
+  .btn-delete:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
+  }
+  
+  .btn-action i {
+    font-size: 0.9rem;
+  }
+  
+  /* Empty State */
+  .empty-state {
+    padding: 4rem 2rem;
+    text-align: center;
+  }
+  
+  .empty-state-icon {
+    font-size: 4rem;
+    color: var(--gray-medium);
+    margin-bottom: 1.5rem;
+    opacity: 0.5;
+  }
+  
+  .empty-state h4 {
+    color: var(--secondary);
+    margin-bottom: 0.5rem;
+  }
+  
+  .empty-state p {
+    color: var(--gray-medium);
+    max-width: 400px;
+    margin: 0 auto 1.5rem;
+  }
+  
+  /* Back Button */
+  .btn-back {
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .btn-back:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateX(-3px);
+    color: white;
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 992px) {
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .page-header {
+      padding: 2rem;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .stats-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .users-table {
+      font-size: 0.9rem;
+    }
+    
+    .users-table thead th,
+    .users-table tbody td {
+      padding: 1rem;
+    }
+    
+    .action-buttons {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    .btn-action {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <nav aria-label="breadcrumb" class="mb-3">
+          <ol class="breadcrumb" style="--bs-breadcrumb-divider: '›';">
+            <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}" class="text-white-50">Dashboard</a></li>
+            <li class="breadcrumb-item active text-white" aria-current="page">Manage Users</li>
+          </ol>
+        </nav>
+        <h1 class="display-5 fw-bold">
+          <i class="fas fa-users-cog me-3"></i>User Management
+        </h1>
+        <p class="lead mb-0">Manage user accounts, roles, and permissions</p>
+      </div>
+      <a href="{{ url_for('admin.dashboard') }}" class="btn-back">
+        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+      </a>
+    </div>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="d-flex align-items-center">
+        <div class="stat-icon users">
+          <i class="fas fa-users"></i>
+        </div>
+        <div class="ms-3">
+          <div class="stat-number">{{ users|length }}</div>
+          <div class="stat-label">Total Users</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="d-flex align-items-center">
+        <div class="stat-icon admins">
+          <i class="fas fa-user-shield"></i>
+        </div>
+        <div class="ms-3">
+          <div class="stat-number">{{ users|selectattr('role', 'equalto', 'admin')|list|length }}</div>
+          <div class="stat-label">Administrators</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="d-flex align-items-center">
+        <div class="stat-icon regular">
+          <i class="fas fa-user"></i>
+        </div>
+        <div class="ms-3">
+          <div class="stat-number">{{ users|selectattr('role', 'equalto', 'user')|list|length }}</div>
+          <div class="stat-label">Regular Users</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="d-flex align-items-center">
+        <div class="stat-icon new">
+          <i class="fas fa-calendar-plus"></i>
+        </div>
+        <div class="ms-3">
+          <div class="stat-number">{{ users|selectattr('created_at', 'ge', today_minus_30)|list|length }}</div>
+          <div class="stat-label">New (Last 30 Days)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Users Table -->
+  <div class="table-card">
+    <div class="table-header">
+      <h3>
+        <i class="fas fa-list"></i>All Users
+        <span class="user-count">{{ users|length }} users</span>
+      </h3>
+    </div>
+    
+    <div class="table-responsive">
+      <table class="table users-table">
+        <thead>
+          <tr>
+            <th style="width: 60px;">Profile</th>
+            <th>Full Name</th>
+            <th>Email</th>
+            <th>Student No.</th>
+            <th>Phone</th>
+            <th>Role</th>
+            <th>Joined Date</th>
+            <th style="width: 200px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in users %}
+          <tr>
+            <td>
+              {% if user.profile_picture %}
+                <img src="{{ url_for('static', filename=user.profile_picture) }}" 
+                     class="user-avatar" alt="{{ user.full_name }}">
+              {% else %}
+                <div class="user-avatar d-flex align-items-center justify-content-center bg-primary text-white">
+                  {{ user.full_name[0]|upper }}
+                </div>
+              {% endif %}
+            </td>
+            <td>
+              <div class="fw-bold">{{ user.full_name }}</div>
+              {% if user.id == current_user.id %}
+                <span class="badge-you">You</span>
+              {% endif %}
+              <div class="small text-muted">ID: {{ user.id_number[:8] }}***</div>
+            </td>
+            <td>
+              <div>{{ user.email }}</div>
+              <div class="small text-muted">{{ user.student_number }}</div>
+            </td>
+            <td><code class="bg-light p-1 rounded">{{ user.student_number }}</code></td>
+            <td>{{ user.phone_number }}</td>
+            <td>
+              {% if user.role == 'admin' %}
+                <span class="role-badge admin">
+                  <i class="fas fa-crown"></i> Admin
+                </span>
+              {% else %}
+                <span class="role-badge user">
+                  <i class="fas fa-user"></i> User
+                </span>
+              {% endif %}
+            </td>
+            <td>
+              <div class="text-nowrap">{{ user.created_at.strftime('%d %b %Y') }}</div>
+              <div class="small text-muted">{{ user.created_at.strftime('%I:%M %p') }}</div>
+            </td>
+            <td>
+              <div class="action-buttons">
+                {% if user.id != current_user.id %}
+                  {% if user.role == 'admin' %}
+                    <form action="{{ url_for('admin.demote_user', user_id=user.id) }}" 
+                          method="POST" 
+                          class="d-inline">
+                      <button type="submit" 
+                              class="btn-action btn-demote"
+                              onclick="return confirm('Remove admin privileges from {{ user.full_name }}?');">
+                        <i class="fas fa-user-minus"></i> Demote
+                      </button>
+                    </form>
+                  {% else %}
+                    <form action="{{ url_for('admin.promote_user', user_id=user.id) }}" 
+                          method="POST"
+                          class="d-inline">
+                      <button type="submit" 
+                              class="btn-action btn-promote"
+                              onclick="return confirm('Make {{ user.full_name }} an administrator?');">
+                        <i class="fas fa-user-shield"></i> Promote
+                      </button>
+                    </form>
+                  {% endif %}
+                  
+                  <form action="{{ url_for('admin.delete_user', user_id=user.id) }}" 
+                        method="POST"
+                        class="d-inline">
+                    <button type="submit" 
+                            class="btn-action btn-delete"
+                            onclick="return confirm('Are you sure you want to delete {{ user.full_name }}?\\n\\n⚠️ This action cannot be undone!');">
+                      <i class="fas fa-trash-alt"></i> Delete
+                    </button>
+                  </form>
+                {% else %}
+                  <span class="text-muted small d-flex align-items-center">
+                    <i class="fas fa-info-circle me-2"></i> Current User
+                  </span>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="8">
+              <div class="empty-state">
+                <div class="empty-state-icon">
+                  <i class="fas fa-users-slash"></i>
+                </div>
+                <h4>No Users Found</h4>
+                <p>There are no registered users in the system yet.</p>
+                <a href="{{ url_for('auth.register') }}" class="btn btn-primary">
+                  <i class="fas fa-user-plus me-2"></i>Add First User
+                </a>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Tips Section -->
+  <div class="alert alert-light border mt-4" role="alert">
+    <div class="d-flex">
+      <div class="me-3">
+        <i class="fas fa-lightbulb text-warning fa-2x"></i>
+      </div>
+      <div>
+        <h5 class="alert-heading">User Management Tips</h5>
+        <ul class="mb-0">
+          <li>Promote trusted users to admin for system management</li>
+          <li>Only delete users who have no active bookings</li>
+          <li>Use caution when demoting admins - they will lose access to admin features</li>
+          <li>Regularly review new user registrations for account security</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Add smooth transitions to table rows
+    const tableRows = document.querySelectorAll('.users-table tbody tr');
+    tableRows.forEach(row => {
+      row.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateX(5px)';
+      });
+      
+      row.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateX(0)';
+      });
+    });
+    
+    // Enhanced confirmation for delete actions
+    const deleteForms = document.querySelectorAll('form[action*="delete_user"]');
+    deleteForms.forEach(form => {
+      const button = form.querySelector('button');
+      if (button) {
+        button.addEventListener('click', function(e) {
+          if (!confirm('⚠️ WARNING: This will permanently delete the user and all their data.\n\nThis action cannot be undone!\n\nAre you absolutely sure?')) {
+            e.preventDefault();
+          }
+        });
+      }
+    });
+    
+    // Add animation to stats cards
+    const statCards = document.querySelectorAll('.stat-card');
+    statCards.forEach((card, index) => {
+      card.style.animationDelay = `${index * 0.1}s`;
+      card.style.animation = 'fadeInUp 0.6s ease-out forwards';
+      card.style.opacity = '0';
+    });
+  });
+</script>
+{% endblock %}

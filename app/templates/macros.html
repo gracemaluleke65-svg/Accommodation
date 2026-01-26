@@ -1,0 +1,121 @@
+{# Pagination Widget Macro #}
+{% macro pagination_widget(pagination, endpoint, url_args={}) %}
+{% if pagination.pages > 1 %}
+<nav aria-label="Page navigation" class="mt-4">
+  <ul class="pagination justify-content-center">
+    <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+      <a class="page-link border-0 rounded-start-3 px-3"
+         href="{{ url_for(endpoint, page=pagination.prev_num, **url_args) if pagination.has_prev else '#' }}">
+        <i class="fas fa-chevron-left me-2"></i>Previous
+      </a>
+    </li>
+
+    {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+      {% if p %}
+        <li class="page-item {% if p == pagination.page %}active{% endif %}">
+          <a class="page-link border-0 mx-1 rounded-circle"
+             href="{{ url_for(endpoint, page=p, **url_args) }}">{{ p }}</a>
+        </li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link border-0 bg-transparent">…</span></li>
+      {% endif %}
+    {% endfor %}
+
+    <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+      <a class="page-link border-0 rounded-end-3 px-3"
+         href="{{ url_for(endpoint, page=pagination.next_num, **url_args) if pagination.has_next else '#' }}">
+        Next<i class="fas fa-chevron-right ms-2"></i>
+      </a>
+    </li>
+  </ul>
+
+  <!-- Page Info -->
+  <div class="text-center mt-2">
+    <span class="badge bg-orange-light text-primary rounded-pill px-3 py-2">
+      <i class="fas fa-file-alt me-2"></i>Page {{ pagination.page }} of {{ pagination.pages }}
+    </span>
+  </div>
+</nav>
+
+<style>
+.pagination .page-link{color:#6c757d;font-weight:500;transition:all .2s ease;}
+.pagination .page-link:hover:not(.disabled){color:#FF6F00;background-color:rgba(255,111,0,.08);}
+.pagination .page-item.active .page-link{background:linear-gradient(135deg,#FF6F00,#FFA040);color:white;border:none;box-shadow:0 2px 8px rgba(255,111,0,.3);}
+.bg-orange-light{background-color:rgba(255,111,0,.1)!important;}
+</style>
+{% endif %}
+{% endmacro %}
+
+{# Accommodation Card Macro #}
+{% macro accommodation_card(accommodation, amenities_icons, current_user=None) %}
+<div class="card card-shadow h-100 border-0">
+  <!-- Image -->
+  <div class="position-relative overflow-hidden" style="height:200px;">
+    {% if accommodation.images and accommodation.images[0] %}
+      <img src="{{ url_for('static', filename=accommodation.images[0]) }}"
+           class="card-img-top h-100 w-100 object-fit-cover"
+           alt="{{ accommodation.title }}">
+    {% else %}
+      <div class="h-100 w-100 bg-gradient-light d-flex align-items-center justify-content-center">
+        <i class="fas fa-home fa-3x text-primary-light"></i>
+      </div>
+    {% endif %}
+
+    <!-- Status -->
+    <span class="position-absolute top-0 end-0 m-3 badge {% if accommodation.status=='available' %}bg-success{% else %}bg-danger{% endif %} px-3 py-2 rounded-pill shadow-sm">
+      <i class="fas {% if accommodation.status=='available' %}fa-check-circle{% else %}fa-times-circle{% endif %} me-1"></i>
+      {{ accommodation.status|replace('_',' ')|title }}
+    </span>
+
+    <!-- Price -->
+    <span class="position-absolute bottom-0 start-0 m-3 badge bg-primary text-white px-3 py-2 rounded-pill shadow-sm">
+      <i class="fas fa-tag me-1"></i> R{{ accommodation.price_per_month|int }}/month
+    </span>
+
+    <!-- Favorite -->
+    {% if current_user and current_user.is_authenticated %}
+      <form action="{{ url_for('main.toggle_favorite', accommodation_id=accommodation.id) }}" method="POST" class="position-absolute bottom-0 end-0 m-3">
+        <button type="submit" class="btn btn-light btn-sm rounded-circle shadow-sm p-2">
+          <i class="fas fa-heart {% if accommodation.id in current_user.favorites|map(attribute='accommodation_id')|list %}text-danger{% else %}text-secondary{% endif %}"></i>
+        </button>
+      </form>
+    {% endif %}
+  </div>
+
+  <!-- Body -->
+  <div class="card-body d-flex flex-column">
+    <h5 class="card-title fw-bold text-truncate mb-1">{{ accommodation.title }}</h5>
+    <p class="text-muted small mb-2"><i class="fas fa-map-marker-alt text-primary me-1"></i> {{ accommodation.location }}</p>
+
+    <div class="d-flex align-items-center mb-2">
+      <span class="badge bg-orange-light text-primary rounded-pill px-3 py-1 me-2"><i class="fas fa-door-closed me-1"></i> {{ accommodation.room_type|title }}</span>
+      <span class="badge bg-blue-light text-accent rounded-pill px-3 py-1"><i class="fas fa-users me-1"></i> {{ accommodation.current_occupancy }}/{{ accommodation.capacity }}</span>
+    </div>
+
+    {% if accommodation.amenities %}
+      <div class="mb-2">
+        <p class="small fw-bold mb-1">Amenities:</p>
+        <div class="d-flex flex-wrap gap-1">
+          {% for amenity in accommodation.amenities[:3] %}
+            <span class="badge bg-gray-light text-secondary rounded-pill px-2 py-1"><i class="fas fa-{{ amenities_icons.get(amenity,'check') }} me-1"></i> {{ amenity|title }}</span>
+          {% endfor %}
+          {% if accommodation.amenities|length > 3 %}<span class="badge bg-gray-light text-secondary rounded-pill px-2 py-1">+{{ accommodation.amenities|length - 3 }} more</span>{% endif %}
+        </div>
+      </div>
+    {% endif %}
+
+    <p class="card-text small text-muted mb-3">{{ accommodation.description|truncate(80) }}</p>
+
+    <!-- Rating -->
+    <div class="d-flex align-items-center mb-3 mt-auto">
+      {% set avg_rating = accommodation.average_rating %}
+      {% for i in range(5) %}<i class="fa-star {% if i < avg_rating|int %}fas text-warning{% else %}far text-warning{% endif %}"></i>{% endfor %}
+      <small class="text-muted ms-1">({{ accommodation.reviews|length }})</small>
+    </div>
+
+    <div class="d-grid">
+      <a href="{{ url_for('main.accommodation_detail', id=accommodation.id) }}" class="btn btn-outline-primary btn-sm rounded-pill"><i class="fas fa-eye me-1"></i> View Details</a>
+    </div>
+  </div>
+</div>
+{% endmacro %}

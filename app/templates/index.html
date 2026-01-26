@@ -1,0 +1,850 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Find Your Perfect Student Accommodation | UniStay{% endblock %}
+
+{% block page_css %}
+<style>
+    /* HERO SECTION STYLES */
+    .hero-section {
+        background: linear-gradient(135deg, rgba(255, 111, 0, 0.9) 0%, rgba(255, 160, 64, 0.9) 100%), 
+                    url('https://images.unsplash.com/photo-1562774053-701939374585?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        min-height: 85vh;
+        display: flex;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        color: white;
+    }
+    
+    .hero-badge {
+        display: inline-block;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 8px 20px;
+        border-radius: 30px;
+        font-size: 0.9rem;
+        margin-bottom: 20px;
+    }
+    
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 800;
+        line-height: 1.2;
+        margin-bottom: 1.5rem;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+    
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2.5rem;
+        }
+        .hero-section {
+            min-height: 70vh;
+            background-attachment: scroll;
+        }
+    }
+    
+    /* FEATURED SECTION */
+    .section-header {
+        position: relative;
+        margin-bottom: 3rem;
+    }
+    
+    .section-header h2 {
+        font-weight: 700;
+        position: relative;
+        display: inline-block;
+    }
+    
+    .section-header h2::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 0;
+        width: 60px;
+        height: 4px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+        border-radius: 2px;
+    }
+    
+    .accommodation-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        height: 100%;
+        background: white;
+    }
+    
+    .accommodation-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1) !important;
+    }
+    
+    .accommodation-card .card-img-top {
+        height: 220px;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    
+    .accommodation-card:hover .card-img-top {
+        transform: scale(1.05);
+    }
+    
+    .price-badge {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 30px;
+        font-weight: 600;
+        box-shadow: 0 4px 15px rgba(255, 111, 0, 0.3);
+    }
+    
+    /* HOW IT WORKS SECTION */
+    .how-it-works-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .how-it-works-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: radial-gradient(var(--primary-light) 1px, transparent 1px);
+        background-size: 50px 50px;
+        opacity: 0.1;
+    }
+    
+    .process-step {
+        position: relative;
+        padding: 2rem 1.5rem;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        height: 100%;
+        border: 2px solid transparent;
+    }
+    
+    .process-step:hover {
+        border-color: var(--primary);
+        transform: translateY(-5px);
+    }
+    
+    .step-number {
+        position: absolute;
+        top: -15px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.2rem;
+        box-shadow: 0 4px 10px rgba(255, 111, 0, 0.3);
+    }
+    
+    /* FEATURES SECTION */
+    .feature-icon {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, rgba(255, 111, 0, 0.1) 0%, rgba(255, 160, 64, 0.1) 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+        color: var(--primary);
+        font-size: 1.8rem;
+        transition: all 0.3s ease;
+    }
+    
+    .feature-item:hover .feature-icon {
+        transform: scale(1.1) rotate(5deg);
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+        color: white;
+    }
+    
+    /* STATS SECTION */
+    .stats-section {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stats-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+    }
+    
+    .stat-item {
+        text-align: center;
+        color: white;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .stat-number {
+        font-size: 3.5rem;
+        font-weight: 800;
+        line-height: 1;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* CTA SECTION */
+    .cta-section {
+        background: linear-gradient(135deg, var(--secondary) 0%, #1a202c 100%);
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .cta-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23FF6F00' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+    }
+    
+    /* DEVELOPER SECTION STYLES */
+    .developer-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        height: 100%;
+        background: white;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    }
+    
+    .developer-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    }
+    
+    .developer-img {
+        width: 180px;
+        height: 180px;
+        object-fit: cover;
+        border: 5px solid white;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .developer-role {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+        color: white;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        display: inline-block;
+    }
+    
+    .developer-contact {
+        font-size: 0.9rem;
+        margin-bottom: 5px;
+    }
+    
+    /* ANIMATIONS */
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+    }
+    
+    .floating-animation {
+        animation: float 3s ease-in-out infinite;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- ========== HERO SECTION ========== -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center min-vh-85 py-5">
+            <div class="col-lg-8 col-md-10 mx-auto text-center hero-content">
+                <span class="hero-badge">
+                    <i class="fas fa-star me-2"></i>Trusted by 10,000+ Students
+                </span>
+                
+                <h1 class="hero-title">
+                    Find Your Perfect <span class="text-warning">Student Home</span> with Confidence
+                </h1>
+                
+                <p class="lead mb-4 fs-5" style="opacity: 0.9;">
+                    UniStay connects students with verified, affordable accommodation near campuses across South Africa. 
+                    Browse, book, and pay securely—all in one place.
+                </p>
+                
+                <div class="d-flex flex-wrap justify-content-center gap-3 mt-4">
+                    <a href="{{ url_for('main.accommodations') }}" class="btn btn-light btn-lg px-5 py-3 rounded-pill shadow-lg">
+                        <i class="fas fa-search me-2"></i> Browse Accommodations
+                    </a>
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-outline-light btn-lg px-5 py-3 rounded-pill">
+                        <i class="fas fa-user-plus me-2"></i> Get Started Free
+                    </a>
+                </div>
+                
+                <div class="mt-5">
+                    <div class="row justify-content-center">
+                        <div class="col-auto">
+                            <div class="text-center">
+                                <div class="fs-2 fw-bold">4.8</div>
+                                <div class="text-warning">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star-half-alt"></i>
+                                </div>
+                                <small>Student Rating</small>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="text-center">
+                                <div class="fs-2 fw-bold">24/7</div>
+                                <div><i class="fas fa-headset text-success"></i></div>
+                                <small>Support</small>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="text-center">
+                                <div class="fs-2 fw-bold">100%</div>
+                                <div><i class="fas fa-shield-alt text-primary"></i></div>
+                                <small>Secure Booking</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ========== HOW IT WORKS ========== -->
+<section class="py-5 how-it-works-section">
+    <div class="container py-5">
+        <div class="section-header text-center">
+            <span class="text-primary fw-bold"><i class="fas fa-play-circle me-2"></i>GET STARTED IN MINUTES</span>
+            <h2 class="display-5 fw-bold mt-2">How UniStay Works</h2>
+            <p class="lead text-muted mx-auto" style="max-width: 700px;">
+                Three simple steps to find and secure your perfect student accommodation
+            </p>
+        </div>
+        
+        <div class="row g-4 mt-4">
+            <div class="col-lg-4 col-md-6">
+                <div class="process-step text-center">
+                    <div class="step-number">1</div>
+                    <div class="mb-4">
+                        <div class="feature-icon mx-auto">
+                            <i class="fas fa-search"></i>
+                        </div>
+                    </div>
+                    <h4 class="fw-bold mb-3">Search & Discover</h4>
+                    <p class="text-muted">
+                        Browse our verified accommodation listings. Filter by location, price, amenities, 
+                        and room type to find your perfect match.
+                    </p>
+                    <ul class="text-start mt-3 ps-3">
+                        <li class="mb-2">Real photos & virtual tours</li>
+                        <li class="mb-2">Detailed amenities list</li>
+                        <li>Student reviews & ratings</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="process-step text-center">
+                    <div class="step-number">2</div>
+                    <div class="mb-4">
+                        <div class="feature-icon mx-auto">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                    </div>
+                    <h4 class="fw-bold mb-3">Book Instantly</h4>
+                    <p class="text-muted">
+                        Select your preferred dates, choose payment option (NSFAS, bursary, or self-pay), 
+                        and submit your booking request.
+                    </p>
+                    <ul class="text-start mt-3 ps-3">
+                        <li class="mb-2">Instant booking confirmation</li>
+                        <li class="mb-2">Multiple payment options</li>
+                        <li>24-hour booking guarantee</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="process-step text-center">
+                    <div class="step-number">3</div>
+                    <div class="mb-4">
+                        <div class="feature-icon mx-auto">
+                            <i class="fas fa-key"></i>
+                        </div>
+                    </div>
+                    <h4 class="fw-bold mb-3">Move In & Enjoy</h4>
+                    <p class="text-muted">
+                        Complete secure payment, receive your digital lease agreement, 
+                        and move into your new home. Welcome to stress-free student living!
+                    </p>
+                    <ul class="text-start mt-3 ps-3">
+                        <li class="mb-2">Secure online payment</li>
+                        <li class="mb-2">Digital documentation</li>
+                        <li>24/7 student support</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ========== FEATURED ACCOMMODATIONS ========== -->
+<section class="py-5">
+    <div class="container py-5">
+        <div class="section-header">
+            <h2>Featured Student Accommodations</h2>
+            <p class="lead text-muted">Curated selection of premium student living spaces</p>
+        </div>
+        
+        <div class="row g-4">
+            {% if featured %}
+                {% for acc in featured %}
+                <div class="col-xl-4 col-lg-6">
+                    <div class="accommodation-card shadow-sm">
+                        <div class="position-relative">
+                            <img src="{{ url_for('static', filename=acc.images[0] if acc.images else 'img/default-accommodation.jpg') }}" 
+                                 class="card-img-top" alt="{{ acc.title }}"
+                                 onerror="this.src='https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'">
+                            <div class="price-badge">
+                                R{{ acc.price_per_month }}<small>/month</small>
+                            </div>
+                            {% if not acc.is_available %}
+                            <div class="position-absolute top-0 start-0 w-100 bg-danger text-white py-1 text-center">
+                                <small><i class="fas fa-times-circle me-1"></i>Fully Occupied</small>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h5 class="fw-bold mb-1">{{ acc.title }}</h5>
+                                    <p class="text-muted mb-2">
+                                        <i class="fas fa-map-marker-alt text-primary me-1"></i>{{ acc.location }}
+                                    </p>
+                                </div>
+                                <div class="text-warning">
+                                    {% for i in range(5) %}
+                                        <i class="fas fa-star{% if i >= (acc.average_rating or 0) %}-o text-muted{% endif %}"></i>
+                                    {% endfor %}
+                                    <small class="text-muted">({{ acc.reviews|length }})</small>
+                                </div>
+                            </div>
+                            
+                            <p class="text-muted mb-3">{{ acc.description[:120] }}...</p>
+                            
+                            <div class="d-flex align-items-center mb-3">
+                                <span class="badge bg-light text-dark me-2">
+                                    <i class="fas fa-bed text-primary me-1"></i>{{ acc.room_type|title }}
+                                </span>
+                                <span class="badge bg-light text-dark me-2">
+                                    <i class="fas fa-users text-primary me-1"></i>{{ acc.current_occupancy }}/{{ acc.capacity }}
+                                </span>
+                                {% if acc.amenities and acc.amenities|length > 0 %}
+                                <span class="badge bg-light text-dark">
+                                    <i class="fas fa-wifi text-primary me-1"></i>{{ acc.amenities[0] }}
+                                </span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center mt-4">
+                                <a href="{{ url_for('main.accommodation_detail', id=acc.id) }}" 
+                                   class="btn btn-outline-primary btn-sm rounded-pill px-4">
+                                    View Details
+                                </a>
+                                {% if acc.is_available %}
+                                <a href="{{ url_for('bookings.book_accommodation', accommodation_id=acc.id) }}" 
+                                   class="btn btn-primary btn-sm rounded-pill px-4 shadow-sm">
+                                    Book Now
+                                </a>
+                                {% else %}
+                                <button class="btn btn-secondary btn-sm rounded-pill px-4" disabled>
+                                    Not Available
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+            <div class="col-12 text-center py-5">
+                <div class="mb-4">
+                    <i class="fas fa-home fa-4x text-muted"></i>
+                </div>
+                <h4 class="text-muted">No featured accommodations available</h4>
+                <p class="text-muted">Check back soon for new listings!</p>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="text-center mt-5">
+            <a href="{{ url_for('main.accommodations') }}" class="btn btn-primary btn-lg rounded-pill px-5">
+                <i class="fas fa-search me-2"></i>View All Accommodations
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ========== KEY FEATURES ========== -->
+<section class="py-5 bg-light">
+    <div class="container py-5">
+        <div class="section-header text-center">
+            <h2>Why Choose UniStay?</h2>
+            <p class="lead text-muted mx-auto" style="max-width: 700px;">
+                We're redefining student accommodation with technology, trust, and transparency
+            </p>
+        </div>
+        
+        <div class="row g-4 mt-4">
+            <div class="col-lg-3 col-md-6">
+                <div class="feature-item text-center p-4">
+                    <div class="feature-icon mx-auto">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Verified Listings</h4>
+                    <p class="text-muted">
+                        Every accommodation is personally verified by our team for safety, 
+                        quality, and compliance.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6">
+                <div class="feature-item text-center p-4">
+                    <div class="feature-icon mx-auto">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Secure Payments</h4>
+                    <p class="text-muted">
+                        Industry-standard encryption protects all transactions. 
+                        Multiple payment options including NSFAS integration.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6">
+                <div class="feature-item text-center p-4">
+                    <div class="feature-icon mx-auto">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">24/7 Support</h4>
+                    <p class="text-muted">
+                        Our dedicated student support team is available round the clock 
+                        to assist with any issues.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6">
+                <div class="feature-item text-center p-4">
+                    <div class="feature-icon mx-auto">
+                        <i class="fas fa-file-contract"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Digital Contracts</h4>
+                    <p class="text-muted">
+                        Sign lease agreements digitally. All documents stored securely 
+                        in your personal dashboard.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ========== STATS SECTION ========== -->
+<section class="py-5 stats-section">
+    <div class="container py-5">
+        <div class="row text-center">
+            <div class="col-lg-3 col-md-6 mb-5">
+                <div class="stat-item">
+                    <div class="stat-number">2,500+</div>
+                    <h5 class="fw-normal">Happy Students</h5>
+                    <p class="opacity-75">Trusted accommodation found</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6 mb-5">
+                <div class="stat-item">
+                    <div class="stat-number">800+</div>
+                    <h5 class="fw-normal">Verified Properties</h5>
+                    <p class="opacity-75">Across major campuses</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6 mb-5">
+                <div class="stat-item">
+                    <div class="stat-number">24/7</div>
+                    <h5 class="fw-normal">Student Support</h5>
+                    <p class="opacity-75">Average response time: 15min</p>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6 mb-5">
+                <div class="stat-item">
+                    <div class="stat-number">98%</div>
+                    <h5 class="fw-normal">Satisfaction Rate</h5>
+                    <p class="opacity-75">Based on student reviews</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ========== ABOUT SYSTEM ========== -->
+<section class="py-5">
+    <div class="container py-5">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-5 mb-lg-0">
+                <div class="position-relative">
+                    <img src="https://images.unsplash.com/photo-1559136555-9303baea8ebd?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                         class="img-fluid rounded-3 shadow-lg" alt="UniStay Platform">
+                    <div class="position-absolute bottom-0 start-0 bg-white p-4 rounded-3 shadow m-4 floating-animation">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-primary rounded-circle p-3 me-3">
+                                <i class="fas fa-check text-white"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-0">Secure Platform</h5>
+                                <small class="text-muted">End-to-end encrypted</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="ps-lg-5">
+                    <div class="section-header">
+                        <span class="text-primary fw-bold"><i class="fas fa-info-circle me-2"></i>ABOUT OUR SYSTEM</span>
+                        <h2 class="display-6 fw-bold mt-2">The Complete Student Accommodation Solution</h2>
+                    </div>
+                    
+                    <p class="lead mb-4">
+                        UniStay is more than just a booking platform—it's an ecosystem designed specifically 
+                        for South African students and accommodation providers.
+                    </p>
+                    
+                    <div class="mb-4">
+                        <h5 class="fw-bold mb-3"><i class="fas fa-user-check text-primary me-2"></i>For Students</h5>
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Browse verified accommodations with real photos</li>
+                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Apply for NSFAS/bursary accommodation seamlessly</li>
+                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Secure online payment with multiple options</li>
+                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Digital lease agreements & documentation</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i> 24/7 support throughout your stay</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h5 class="fw-bold mb-3"><i class="fas fa-building text-primary me-2"></i>For Accommodation Providers</h5>
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Manage multiple properties from one dashboard</li>
+                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Automated booking & payment processing</li>
+                            <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Verified student profiles & booking history</li>
+                            <li><i class="fas fa-check-circle text-success me-2"></i> Occupancy analytics & revenue reporting</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ========== DEVELOPERS SECTION ========== -->
+<section class="py-5 bg-light">
+    <div class="container py-5">
+        <div class="section-header text-center">
+            <span class="text-primary fw-bold"><i class="fas fa-code me-2"></i>MEET THE DEVELOPERS</span>
+            <h2 class="display-6 fw-bold mt-2">Built with Passion by DUT Students</h2>
+            <p class="lead text-muted mx-auto" style="max-width: 700px;">
+                UniStay was developed by ICT students dedicated to solving student accommodation challenges
+            </p>
+        </div>
+        
+        <div class="row justify-content-center g-4 mt-4">
+            <!-- Shichabo Nkuna -->
+            <div class="col-lg-5 col-md-6">
+                <div class="developer-card p-4 text-center">
+                    <div class="mb-4">
+                        <img src="{{ url_for('static', filename='images/shichabo.jpg') }}" 
+                             alt="Shichabo Nkuna" 
+                             class="developer-img rounded-circle mb-3"
+                             onerror="this.src='https://ui-avatars.com/api/?name=Shichabo+Nkuna&background=FF6F00&color=fff&size=200'">
+                        <h4 class="fw-bold mb-1">Shichabo Nkuna</h4>
+                        <div class="developer-role mb-3">Software Developer</div>
+                        <p class="text-muted mb-4">
+                            ICT Applications Development graduate with expertise in full-stack web development, 
+                            database design, and cloud infrastructure. Passionate about building scalable, 
+                            maintainable systems.
+                        </p>
+                    </div>
+                    
+                    <div class="text-start mb-4">
+                        <div class="developer-contact">
+                            <i class="fas fa-phone text-primary me-2"></i> 062 719 5389
+                        </div>
+                        <div class="developer-contact">
+                            <i class="fas fa-envelope text-primary me-2"></i> shichabonkuna22@gmail.com
+                        </div>
+                        <div class="developer-contact">
+                            <i class="fas fa-map-marker-alt text-primary me-2"></i> Johannesburg, South Africa
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-center">
+                        <a href="https://shichabonkuna22-star.github.io/portfolio/" 
+                           target="_blank" 
+                           class="btn btn-primary btn-sm rounded-pill px-4">
+                            <i class="fas fa-globe me-2"></i> View Portfolio
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Philile Danisa -->
+            <div class="col-lg-5 col-md-6">
+                <div class="developer-card p-4 text-center">
+                    <div class="mb-4">
+                        <img src="{{ url_for('static', filename='images/philile.jpg') }}" 
+                             alt="Philile Danisa" 
+                             class="developer-img rounded-circle mb-3"
+                             onerror="this.src='https://ui-avatars.com/api/?name=Philile+Danisa&background=FF6F00&color=fff&size=200'">
+                        <h4 class="fw-bold mb-1">Philile Danisa</h4>
+                        <div class="developer-role mb-3">Business Analyst</div>
+                        <p class="text-muted mb-4">
+                            ICT Business Analysis graduate specializing in requirements gathering, 
+                            system analysis, and process optimization. Focused on creating user-centric 
+                            solutions that address real student needs.
+                        </p>
+                    </div>
+                    
+                    <div class="text-start mb-4">
+                        <div class="developer-contact">
+                            <i class="fas fa-phone text-primary me-2"></i> 066 213 6479
+                        </div>
+                        <div class="developer-contact">
+                            <i class="fas fa-envelope text-primary me-2"></i> phililedanisa0@gmail.com
+                        </div>
+                        <div class="developer-contact">
+                            <i class="fas fa-map-marker-alt text-primary me-2"></i> Durban, South Africa
+                        </div>
+                        <div class="developer-contact">
+                            <i class="fab fa-linkedin text-primary me-2"></i> linkedin.com/in/philile-danisa
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-center">
+                        <a href="https://www.linkedin.com/in/philile-danisa-040a80329" 
+                           target="_blank" 
+                           class="btn btn-outline-primary btn-sm rounded-pill px-4">
+                            <i class="fab fa-linkedin me-2"></i> Connect on LinkedIn
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-5">
+            <p class="text-muted mb-0">
+                <i class="fas fa-graduation-cap text-primary me-2"></i>
+                Both developers are graduates of Durban University of Technology's ICT program
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- ========== CALL TO ACTION ========== -->
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animation on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate__animated', 'animate__fadeInUp');
+                }
+            });
+        }, observerOptions);
+        
+        // Observe elements
+        document.querySelectorAll('.process-step, .feature-item, .accommodation-card, .developer-card').forEach(el => {
+            observer.observe(el);
+        });
+        
+        // Counter animation for stats
+        const statElements = document.querySelectorAll('.stat-number');
+        statElements.forEach(stat => {
+            const target = parseInt(stat.textContent);
+            let current = 0;
+            const increment = target / 50;
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    stat.textContent = target.toLocaleString() + '+';
+                    clearInterval(timer);
+                } else {
+                    stat.textContent = Math.floor(current).toLocaleString();
+                }
+            }, 30);
+        });
+    });
+</script>
+{% endblock %}

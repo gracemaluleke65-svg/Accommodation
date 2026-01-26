@@ -1,0 +1,582 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile – UniStay{% endblock %}
+
+{% block page_css %}
+<style>
+  /* PROFILE PAGE SPECIFIC STYLES */
+  
+  .profile-container {
+    min-height: calc(100vh - 300px);
+  }
+  
+  /* Profile Header */
+  .profile-header {
+    background: linear-gradient(135deg, #FF6F00 0%, #FFA040 100%);
+    border-radius: 20px;
+    padding: 2rem;
+    color: white;
+    margin-bottom: -3rem;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .profile-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+  
+  /* Profile Card */
+  .profile-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+    padding: 2rem;
+    position: relative;
+    z-index: 1;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .profile-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 50px rgba(255, 111, 0, 0.15);
+  }
+  
+  .profile-avatar {
+    width: 140px;
+    height: 140px;
+    border: 5px solid white;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    margin-top: -4rem;
+    transition: all 0.4s ease;
+  }
+  
+  .profile-avatar:hover {
+    transform: scale(1.05);
+    box-shadow: 0 15px 35px rgba(255, 111, 0, 0.3);
+  }
+  
+  .profile-stats {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin: 2rem 0;
+  }
+  
+  .stat-item {
+    text-align: center;
+    padding: 1rem;
+    border-radius: 15px;
+    background: linear-gradient(135deg, #F8F9FA 0%, #FFFFFF 100%);
+    border: 1px solid #E9ECEF;
+    min-width: 120px;
+    transition: all 0.3s ease;
+  }
+  
+  .stat-item:hover {
+    transform: translateY(-3px);
+    border-color: #FF6F00;
+    box-shadow: 0 8px 25px rgba(255, 111, 0, 0.1);
+  }
+  
+  .stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #FF6F00;
+    font-family: 'Montserrat', sans-serif;
+  }
+  
+  .stat-label {
+    font-size: 0.875rem;
+    color: #6C757D;
+    font-weight: 500;
+  }
+  
+  /* Info Cards */
+  .info-card {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    border: 1px solid #E9ECEF;
+    transition: all 0.3s ease;
+    height: 100%;
+  }
+  
+  .info-card:hover {
+    border-color: #FF6F00;
+    box-shadow: 0 8px 25px rgba(255, 111, 0, 0.08);
+    transform: translateY(-2px);
+  }
+  
+  .info-card .icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #FFE8D6 0%, #FFD3B6 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #FF6F00;
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  
+  /* Bookings Table */
+  .bookings-container {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+    padding: 2rem;
+  }
+  
+  .table-header {
+    background: linear-gradient(135deg, #F8F9FA 0%, #FFFFFF 100%);
+    border-radius: 15px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border: 1px solid #E9ECEF;
+  }
+  
+  .booking-row {
+    background: white;
+    border-radius: 12px;
+    margin-bottom: 0.75rem;
+    padding: 1.25rem;
+    border: 1px solid #E9ECEF;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .booking-row:hover {
+    transform: translateX(5px);
+    border-color: #FF6F00;
+    box-shadow: 0 5px 20px rgba(255, 111, 0, 0.08);
+  }
+  
+  .status-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .status-paid {
+    background: linear-gradient(135deg, #D1FAE5 0%, #10B981 100%);
+    color: #065F46;
+  }
+  
+  .status-approved {
+    background: linear-gradient(135deg, #FEF3C7 0%, #F59E0B 100%);
+    color: #92400E;
+  }
+  
+  .status-pending {
+    background: linear-gradient(135deg, #E0F2FE 0%, #0EA5E9 100%);
+    color: #0C4A6E;
+  }
+  
+  .status-cancelled {
+    background: linear-gradient(135deg, #FEE2E2 0%, #EF4444 100%);
+    color: #991B1B;
+  }
+  
+  /* Action Buttons */
+  .action-buttons {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 2rem;
+  }
+  
+  .btn-gradient {
+    background: linear-gradient(135deg, #FF6F00 0%, #FFA040 100%);
+    border: none;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+  
+  .btn-gradient:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(255, 111, 0, 0.3);
+    color: white;
+  }
+  
+  .btn-outline-gradient {
+    background: transparent;
+    border: 2px solid transparent;
+    background-image: linear-gradient(white, white), linear-gradient(135deg, #FF6F00 0%, #FFA040 100%);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    color: #FF6F00;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+  
+  .btn-outline-gradient:hover {
+    background-image: linear-gradient(135deg, #FF6F00 0%, #FFA040 100%), linear-gradient(135deg, #FF6F00 0%, #FFA040 100%);
+    color: white;
+    transform: translateY(-2px);
+  }
+  
+  /* Empty State */
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+  }
+  
+  .empty-state-icon {
+    font-size: 4rem;
+    color: #FF6F00;
+    margin-bottom: 1.5rem;
+    opacity: 0.8;
+  }
+  
+  /* Animations */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .animate-fadeIn {
+    animation: fadeInUp 0.6s ease-out;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .profile-stats {
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    .stat-item {
+      min-width: auto;
+    }
+    
+    .booking-row {
+      flex-direction: column;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+    
+    .action-buttons {
+      flex-direction: column;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+  <!-- Profile Header -->
+  <div class="profile-header animate-fadeIn">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-md-8 text-center text-md-start">
+          <h1 class="display-5 fw-bold mb-3">My Profile</h1>
+          <p class="lead mb-0">Welcome back, {{ current_user.full_name.split()[0] }}! Manage your account and bookings.</p>
+        </div>
+        <div class="col-md-4 text-center text-md-end">
+          <span class="badge bg-white text-orange px-3 py-2 rounded-pill fs-6">
+            <i class="fas fa-crown me-1"></i>
+            {{ current_user.role|upper }} ACCOUNT
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container mt-5">
+    <div class="row g-4">
+      <!-- Left Column: Profile Info -->
+      <div class="col-lg-4">
+        <div class="profile-card animate-fadeIn" style="animation-delay: 0.1s">
+          <!-- Profile Avatar -->
+          <div class="text-center mb-4">
+            <img src="{{ url_for('static', filename=current_user.profile_picture or 'images/default_profile.png') }}"
+                 alt="Profile"
+                 class="profile-avatar rounded-circle object-fit-cover">
+          </div>
+
+          <!-- User Info -->
+          <h3 class="text-center mb-4">{{ current_user.full_name }}</h3>
+          
+          <div class="mb-4">
+            <div class="info-card mb-3">
+              <div class="d-flex align-items-center">
+                <div class="icon me-3">
+                  <i class="fas fa-graduation-cap"></i>
+                </div>
+                <div>
+                  <p class="text-muted mb-0">Student Number</p>
+                  <h5 class="mb-0 fw-bold">{{ current_user.student_number }}</h5>
+                </div>
+              </div>
+            </div>
+
+            <div class="info-card mb-3">
+              <div class="d-flex align-items-center">
+                <div class="icon me-3">
+                  <i class="fas fa-envelope"></i>
+                </div>
+                <div>
+                  <p class="text-muted mb-0">Email Address</p>
+                  <h5 class="mb-0 fw-bold">{{ current_user.email }}</h5>
+                </div>
+              </div>
+            </div>
+
+            <div class="info-card mb-3">
+              <div class="d-flex align-items-center">
+                <div class="icon me-3">
+                  <i class="fas fa-phone"></i>
+                </div>
+                <div>
+                  <p class="text-muted mb-0">Phone Number</p>
+                  <h5 class="mb-0 fw-bold">+27 {{ current_user.phone_number }}</h5>
+                </div>
+              </div>
+            </div>
+
+            <div class="info-card">
+              <div class="d-flex align-items-center">
+                <div class="icon me-3">
+                  <i class="fas fa-id-card"></i>
+                </div>
+                <div>
+                  <p class="text-muted mb-0">ID Number</p>
+                  <h5 class="mb-0 fw-bold">{{ current_user.id_number }}</h5>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Stats -->
+          <div class="profile-stats">
+            <div class="stat-item">
+              <div class="stat-number">{{ bookings|length }}</div>
+              <div class="stat-label">Bookings</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-number">
+                {% set paid = bookings|selectattr('status', 'equalto', 'paid')|list|length %}
+                {{ paid }}
+              </div>
+              <div class="stat-label">Paid</div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="action-buttons">
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-gradient flex-fill">
+              <i class="fas fa-sign-out-alt me-2"></i>Logout
+            </a>
+            {% if current_user.is_admin() %}
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-gradient flex-fill">
+              <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Recent Bookings -->
+      <div class="col-lg-8">
+        <div class="bookings-container animate-fadeIn" style="animation-delay: 0.2s">
+          <div class="table-header">
+            <div class="row align-items-center">
+              <div class="col-md-6">
+                <h3 class="mb-0">
+                  <i class="fas fa-calendar-check me-2 text-primary"></i>
+                  My Bookings
+                </h3>
+              </div>
+              <div class="col-md-6 text-md-end">
+                <a href="{{ url_for('bookings.my_bookings') }}" class="btn btn-sm btn-outline-primary">
+                  View All <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {% if bookings %}
+            {% for booking in bookings %}
+            <div class="booking-row">
+              <div class="d-flex align-items-center">
+                <div class="me-4">
+                  <div class="bg-light rounded-circle p-3">
+                    <i class="fas fa-home fa-lg text-primary"></i>
+                  </div>
+                </div>
+                <div class="flex-grow-1">
+                  <h5 class="mb-1">{{ booking.accommodation.title }}</h5>
+                  <div class="d-flex flex-wrap gap-2 mb-2">
+                    <span class="badge bg-light text-dark">
+                      <i class="fas fa-clock me-1"></i>
+                      {{ booking.duration|title }}{% if booking.period %} ({{ booking.period }}){% endif %}
+                    </span>
+                    <span class="badge bg-light text-dark">
+                      <i class="fas fa-user-tie me-1"></i>
+                      {{ booking.payment_responsible|title }}
+                    </span>
+                    <span class="badge bg-light text-dark">
+                      <i class="fas fa-calendar me-1"></i>
+                      {{ booking.created_at.strftime('%d %b %Y') }}
+                    </span>
+                  </div>
+                  <div class="d-flex align-items-center">
+                    <span class="status-badge {% if booking.status == 'paid' %}status-paid
+                                             {% elif booking.status == 'approved' %}status-approved
+                                             {% elif booking.status == 'pending' %}status-pending
+                                             {% else %}status-cancelled{% endif %}">
+                      <i class="fas 
+                        {% if booking.status == 'paid' %}fa-check-circle
+                        {% elif booking.status == 'approved' %}fa-clock
+                        {% elif booking.status == 'pending' %}fa-hourglass-half
+                        {% else %}fa-times-circle{% endif %}">
+                      </i>
+                      {{ booking.status|upper }}
+                    </span>
+                    <span class="ms-3 fw-bold fs-5 text-dark">
+                      R{{ "%.2f"|format(booking.total_price) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-3 mt-md-0">
+                <a href="{{ url_for('bookings.view_booking', booking_id=booking.id) }}" 
+                   class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                  <i class="fas fa-eye me-1"></i> View Details
+                </a>
+                {% if booking.status == 'approved' %}
+                <a href="{{ url_for('bookings.payment', booking_id=booking.id) }}" 
+                   class="btn btn-primary btn-sm rounded-pill px-3 ms-2">
+                  <i class="fas fa-credit-card me-1"></i> Pay Now
+                </a>
+                {% endif %}
+              </div>
+            </div>
+            {% endfor %}
+          {% else %}
+            <div class="empty-state">
+              <div class="empty-state-icon">
+                <i class="fas fa-calendar-times"></i>
+              </div>
+              <h3 class="mb-3">No Bookings Yet</h3>
+              <p class="text-muted mb-4">You haven't made any bookings yet. Start exploring our accommodations!</p>
+              <a href="{{ url_for('main.accommodations') }}" class="btn btn-gradient btn-lg">
+                <i class="fas fa-search me-2"></i>Browse Accommodations
+              </a>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="row mt-4 animate-fadeIn" style="animation-delay: 0.3s">
+          <div class="col-md-4">
+            <a href="{{ url_for('main.favorites') }}" class="text-decoration-none">
+              <div class="info-card h-100 text-center">
+                <div class="icon mx-auto mb-3">
+                  <i class="fas fa-heart"></i>
+                </div>
+                <h5 class="mb-2">My Favorites</h5>
+                <p class="text-muted mb-0">View your saved accommodations</p>
+              </div>
+            </a>
+          </div>
+          <div class="col-md-4">
+            <a href="{{ url_for('main.accommodations') }}" class="text-decoration-none">
+              <div class="info-card h-100 text-center">
+                <div class="icon mx-auto mb-3">
+                  <i class="fas fa-search"></i>
+                </div>
+                <h5 class="mb-2">Find Accommodation</h5>
+                <p class="text-muted mb-0">Browse available rooms</p>
+              </div>
+            </a>
+          </div>
+          <div class="col-md-4">
+            <a href="{{ url_for('bookings.my_bookings') }}" class="text-decoration-none">
+              <div class="info-card h-100 text-center">
+                <div class="icon mx-auto mb-3">
+                  <i class="fas fa-history"></i>
+                </div>
+                <h5 class="mb-2">Booking History</h5>
+                <p class="text-muted mb-0">View all your bookings</p>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Add hover effect to profile cards
+    const profileCards = document.querySelectorAll('.info-card, .booking-row');
+    
+    profileCards.forEach(card => {
+      card.addEventListener('mouseenter', function() {
+        this.style.transform = this.classList.contains('booking-row') 
+          ? 'translateX(5px)' 
+          : 'translateY(-5px)';
+      });
+      
+      card.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0)';
+      });
+    });
+    
+    // Animate stats on scroll
+    const stats = document.querySelectorAll('.stat-number');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const stat = entry.target;
+          const finalValue = parseInt(stat.textContent);
+          let startValue = 0;
+          const duration = 1500;
+          const increment = finalValue / (duration / 16);
+          
+          const timer = setInterval(() => {
+            startValue += increment;
+            if (startValue >= finalValue) {
+              stat.textContent = finalValue;
+              clearInterval(timer);
+            } else {
+              stat.textContent = Math.floor(startValue);
+            }
+          }, 16);
+          
+          observer.unobserve(stat);
+        }
+      });
+    }, { threshold: 0.5 });
+    
+    stats.forEach(stat => observer.observe(stat));
+  });
+</script>
+{% endblock %}

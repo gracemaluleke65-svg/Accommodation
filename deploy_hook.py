@@ -7,6 +7,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from app import create_app, db
 from app.models import User
+from sqlalchemy import text
 
 app = create_app('config.Config')
 
@@ -14,13 +15,28 @@ with app.app_context():
     print("🔄 Setting up database...")
     
     try:
-        # Drop all tables and recreate (fresh start)
-        print("Dropping existing tables...")
-        db.drop_all()
+        # CRITICAL FIX: Drop all tables with CASCADE to handle foreign keys
+        print("Dropping all existing tables with CASCADE...")
         
+        # Get database connection
+        with db.engine.connect() as conn:
+            # Disable foreign key checks temporarily (PostgreSQL specific)
+            conn.execute(text("DROP TABLE IF EXISTS policies CASCADE"))
+            conn.execute(text("DROP TABLE IF EXISTS system_logs CASCADE"))
+            conn.execute(text("DROP TABLE IF EXISTS claims CASCADE"))
+            conn.execute(text("DROP TABLE IF EXISTS transactions CASCADE"))
+            conn.execute(text("DROP TABLE IF EXISTS payments CASCADE"))
+            conn.execute(text("DROP TABLE IF EXISTS reviews CASCADE"))
+            conn.execute(text("DROP TABLE IF EXISTS bookings CASCADE"))
+            conn.execute(text("DROP TABLE IF EXISTS favorites CASCADE"))
+            conn.execute(text("DROP TABLE IF EXISTS accommodations CASCADE"))
+            conn.execute(text("DROP TABLE IF EXISTS users CASCADE"))
+            conn.commit()
+            print("✅ All old tables dropped")
+        
+        # Now create fresh tables
         print("Creating new tables...")
         db.create_all()
-        
         print("✅ Database tables created successfully")
         
         # Seed admin user

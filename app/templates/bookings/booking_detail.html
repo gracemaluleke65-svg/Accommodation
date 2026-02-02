@@ -451,26 +451,27 @@
     <!-- Sidebar - Actions & Accommodation Preview -->
     <div class="col-lg-4">
       <!-- Accommodation Preview -->
-      <a href="{{ url_for('main.accommodation_detail', id=booking.accommodation.id) }}" class="accommodation-card mb-4">
-        {% if booking.accommodation.images and booking.accommodation.images|length > 0 %}
-          <img src="{{ url_for('static', filename=booking.accommodation.images[0]) }}" 
-               alt="{{ booking.accommodation.title }}" class="accommodation-image">
-        {% else %}
-          <img src="{{ url_for('static', filename='images/default_accommodation.jpg') }}" 
-               alt="Default accommodation" class="accommodation-image">
-        {% endif %}
-        <div class="p-3">
-          <h5 class="mb-2">{{ booking.accommodation.title }}</h5>
-          <p class="text-secondary mb-2">
-            <i class="fas fa-map-marker-alt me-1 text-primary"></i>
-            {{ booking.accommodation.location }}
-          </p>
-          <div class="d-flex justify-content-between align-items-center">
-            <span class="badge bg-primary">{{ booking.accommodation.room_type|title }}</span>
-            <span class="text-primary fw-bold">R{{ booking.accommodation.price_per_month }}/month</span>
-          </div>
-        </div>
-      </a>
+     <!-- Accommodation Preview -->
+<a href="{{ url_for('main.accommodation_detail', id=booking.accommodation.id) }}" class="accommodation-card mb-4">
+  {% if booking.accommodation.images and booking.accommodation.images|length > 0 %}
+    <img src="{{ booking.accommodation.images[0].to_data_uri() }}" 
+         alt="{{ booking.accommodation.title }}" class="accommodation-image">
+  {% else %}
+    <img src="{{ url_for('static', filename='images/default_accommodation.jpg') }}" 
+         alt="Default accommodation" class="accommodation-image">
+  {% endif %}
+  <div class="p-3">
+    <h5 class="mb-2">{{ booking.accommodation.title }}</h5>
+    <p class="text-secondary mb-2">
+      <i class="fas fa-map-marker-alt me-1 text-primary"></i>
+      {{ booking.accommodation.location }}
+    </p>
+    <div class="d-flex justify-content-between align-items-center">
+      <span class="badge bg-primary">{{ booking.accommodation.room_type|title }}</span>
+      <span class="text-primary fw-bold">R{{ booking.accommodation.price_per_month }}/month</span>
+    </div>
+  </div>
+</a>
 
       <!-- Action Buttons -->
       <div class="booking-details-card">

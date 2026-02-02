@@ -322,14 +322,25 @@
 {% block content %}
 <div class="container py-4">
   <!-- Image Carousel -->
-  <div class="hero-carousel mb-4">
+  <!-- Main Image Carousel -->
+<div class="hero-carousel mb-4">
     <div id="accCarousel" class="carousel slide h-100" data-bs-ride="carousel">
       <div class="carousel-inner h-100">
         {% for img in accommodation.images %}
         <div class="carousel-item h-100 {% if loop.first %}active{% endif %}">
-          <img src="{{ url_for('static', filename=img) }}" 
+          <!-- CHANGED: Use img.to_data_uri() instead of url_for('static', filename=img) -->
+          <img src="{{ img.to_data_uri() }}" 
                class="d-block w-100" 
-               alt="Accommodation Image {{ loop.index }}">
+               alt="Accommodation Image {{ loop.index }}"
+               style="object-fit: cover; height: 100%;">
+        </div>
+        {% else %}
+        <!-- Fallback if no images -->
+        <div class="carousel-item h-100 active">
+          <img src="{{ url_for('static', filename='images/default_accommodation.jpg') }}" 
+               class="d-block w-100" 
+               alt="Default Image"
+               style="object-fit: cover; height: 100%;">
         </div>
         {% endfor %}
       </div>
@@ -345,20 +356,24 @@
       </button>
       {% endif %}
     </div>
-  </div>
+</div>
 
-  <!-- Image Thumbnails -->
-  {% if accommodation.images|length > 1 %}
-  <div class="image-thumbnails justify-content-center mb-4">
+<!-- Image Thumbnails -->
+{% if accommodation.images|length > 1 %}
+<div class="image-thumbnails justify-content-center mb-4">
     {% for img in accommodation.images %}
     <div class="thumbnail {% if loop.first %}active{% endif %}" 
          data-bs-target="#accCarousel" 
          data-bs-slide-to="{{ loop.index0 }}">
-      <img src="{{ url_for('static', filename=img) }}" alt="Thumbnail {{ loop.index }}">
+      <!-- CHANGED: Use img.to_data_uri() here too -->
+      <img src="{{ img.to_data_uri() }}" alt="Thumbnail {{ loop.index }}">
     </div>
     {% endfor %}
-  </div>
-  {% endif %}
+</div>
+{% endif %}
+
+
+
 
   <div class="row">
     <!-- Left Column - Main Content -->

@@ -40,10 +40,12 @@ def register():
         )
         user.set_password(form.password.data)
         
-        # Handle profile picture upload
+        # Handle profile picture upload - NEW Base64 approach
         if form.profile_picture.data:
-            profile_pic = save_profile_picture(form.profile_picture.data, user.id)
-            user.profile_picture = profile_pic
+            img_result = save_profile_picture(form.profile_picture.data, user.id)
+            if img_result:
+                user.profile_picture_data = img_result['data']
+                user.profile_picture_type = img_result['type']
         
         db.session.add(user)
         db.session.commit()
@@ -52,7 +54,6 @@ def register():
         return redirect(url_for('auth.login'))
     
     return render_template('auth/register.html', form=form)
-
 
 @bp.route('/login', methods=['GET', 'POST'])
 def login():

@@ -48,10 +48,14 @@ def manage_accommodations():
 # ------------------------------------------------------------------
 # ADD accommodation
 # ------------------------------------------------------------------
+# ------------------------------------------------------------------
+# ADD accommodation
+# ------------------------------------------------------------------
 @bp.route('/accommodations/add', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def add_accommodation():
+    from app.models import AccommodationImage  # Import here to avoid circular issues
     form = AccommodationForm()
     if form.validate_on_submit():
         acc = Accommodation(
@@ -66,14 +70,21 @@ def add_accommodation():
             admin_id=current_user.id
         )
         db.session.add(acc)
-        db.session.commit()
+        db.session.commit()  # Commit to get acc.id
 
+        # Handle images - NEW Base64 approach
         files = request.files.getlist('images')
         if files and files[0].filename:
-            saved_paths = save_accommodation_images(files, acc.id)
-            if saved_paths:
-                acc.images = saved_paths
-                db.session.commit()
+            image_data_list = save_accommodation_images(files, acc.id)
+            for img_data in image_data_list:
+                image_obj = AccommodationImage(
+                    accommodation_id=acc.id,
+                    image_data=img_data['data'],
+                    image_type=img_data['type'],
+                    filename=img_data['filename']
+                )
+                db.session.add(image_obj)
+            db.session.commit()
 
         flash('Accommodation added successfully!', 'success')
         return redirect(url_for('admin.manage_accommodations'))
@@ -93,6 +104,7 @@ def add_accommodation():
 @login_required
 @admin_required
 def edit_accommodation(id):
+    from app.models import AccommodationImage
     acc = Accommodation.query.get_or_404(id)
     form = AccommodationForm(obj=acc)
     
@@ -118,15 +130,19 @@ def edit_accommodation(id):
             has_new_files = any(f and f.filename for f in files)
             
             if has_new_files:
-                new_paths = save_accommodation_images(files, acc.id)
-                if new_paths:
-                    # Ensure existing images is a clean list of strings
-                    existing_images = []
-                    if acc.images and isinstance(acc.images, list):
-                        existing_images = [img for img in acc.images if isinstance(img, str)]
-                    
-                    # Combine existing with new paths
-                    acc.images = existing_images + new_paths
+                # Delete old images (optional - remove this block if you want to keep old images)
+                # AccommodationImage.query.filter_by(accommodation_id=acc.id).delete()
+                
+                # Add new images
+                image_data_list = save_accommodation_images(files, acc.id)
+                for img_data in image_data_list:
+                    image_obj = AccommodationImage(
+                        accommodation_id=acc.id,
+                        image_data=img_data['data'],
+                        image_type=img_data['type'],
+                        filename=img_data['filename']
+                    )
+                    db.session.add(image_obj)
 
             db.session.commit()
             flash('Accommodation updated successfully!', 'success')
@@ -146,7 +162,6 @@ def edit_accommodation(id):
                 current_app.logger.error(f'Form validation error - {field}: {error}')
     
     return render_template('admin/edit_accommodation.html', form=form, accommodation=acc)
-
 # ------------------------------------------------------------------
 # DELETE accommodation
 # ------------------------------------------------------------------

@@ -560,15 +560,18 @@
         </form>
     </div>
 
+
+
     <!-- Accommodation Grid -->
-    {% if accommodations.items %}
+{% if accommodations.items %}
     <div class="row g-4">
         {% for acc in accommodations.items %}
         <div class="col-xl-4 col-lg-6 col-md-6">
             <div class="accommodation-card">
                 <!-- Image Container -->
                 <div class="card-image-container">
-                    <img src="{{ url_for('static', filename=acc.images[0]) if acc.images else url_for('static', filename='images/default-accommodation.jpg') }}"
+                    <!-- UPDATED: Use Base64 image from database -->
+                    <img src="{{ acc.images[0].to_data_uri() if acc.images else url_for('static', filename='images/default-accommodation.jpg') }}"
                          alt="{{ acc.title }}" loading="lazy">
                     
                     <!-- Heart Icon - Coming Soon -->
@@ -594,6 +597,7 @@
                     </button>
                 </div>
                 
+                <!-- Rest of your card code remains the same... -->
                 <!-- Card Body -->
                 <div class="card-body">
                     <h3 class="accommodation-title">{{ acc.title }}</h3>
@@ -665,7 +669,9 @@
         </div>
         {% endfor %}
     </div>
+   
     
+
     <!-- Pagination -->
     <div class="pagination-container">
         <div class="d-flex justify-content-center">

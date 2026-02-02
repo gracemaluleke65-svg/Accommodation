@@ -402,7 +402,8 @@
             <div class="accommodation-card">
                 <!-- Image Container -->
                 <div class="card-image-container">
-                    <img src="{{ url_for('static', filename=booking.accommodation.images[0]) if booking.accommodation.images else url_for('static', filename='images/default-accommodation.jpg') }}"
+                    <!-- UPDATED: Use Base64 data URI instead of file path -->
+                    <img src="{{ booking.accommodation.first_image }}" 
                          alt="{{ booking.accommodation.title }}" loading="lazy">
                     
                     <!-- Room Type Badge -->

@@ -2,6 +2,7 @@ from datetime import datetime
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db
+import base64
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
@@ -11,7 +12,9 @@ class User(UserMixin, db.Model):
     full_name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(200), nullable=False)
-    profile_picture = db.Column(db.String(200), default='images/default_profile.png')
+    # Changed: Store Base64 image data instead of file path
+    profile_picture_data = db.Column(db.Text)  # Base64 encoded image
+    profile_picture_type = db.Column(db.String(50))  # MIME type (e.g., 'image/jpeg')
     id_number = db.Column(db.String(13), unique=True, nullable=False)
     phone_number = db.Column(db.String(10), nullable=False)
     role = db.Column(db.String(20), default='user')
@@ -30,6 +33,28 @@ class User(UserMixin, db.Model):
     
     def is_admin(self):
         return self.role == 'admin'
+    
+    @property
+    def profile_picture(self):
+        """Return data URI for HTML img src"""
+        if self.profile_picture_data:
+            return f"data:{self.profile_picture_type};base64,{self.profile_picture_data}"
+        return 'images/default_profile.png'
+
+class AccommodationImage(db.Model):
+    """Store images as Base64 in database - PERSISTS on Render free tier"""
+    __tablename__ = 'accommodation_images'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    accommodation_id = db.Column(db.Integer, db.ForeignKey('accommodations.id'), nullable=False)
+    image_data = db.Column(db.Text, nullable=False)  # Base64 encoded
+    image_type = db.Column(db.String(50), nullable=False)  # MIME type
+    filename = db.Column(db.String(200))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def to_data_uri(self):
+        """Convert to data URI for HTML img src"""
+        return f"data:{self.image_type};base64,{self.image_data}"
 
 class Accommodation(db.Model):
     __tablename__ = 'accommodations'
@@ -43,7 +68,7 @@ class Accommodation(db.Model):
     capacity = db.Column(db.Integer, nullable=False)
     current_occupancy = db.Column(db.Integer, default=0)
     amenities = db.Column(db.JSON)
-    images = db.Column(db.JSON)
+    # Removed: images = db.Column(db.JSON) - Now uses relationship
     status = db.Column(db.String(20), default='available')
     admin_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -54,6 +79,7 @@ class Accommodation(db.Model):
     favorites = db.relationship('Favorite', backref='accommodation', lazy=True, cascade='all, delete-orphan')
     bookings = db.relationship('Booking', backref='accommodation', lazy=True)
     reviews = db.relationship('Review', backref='accommodation', lazy=True)
+    images = db.relationship('AccommodationImage', backref='accommodation', lazy=True, cascade='all, delete-orphan')
     
     @property
     def is_available(self):
@@ -64,6 +90,13 @@ class Accommodation(db.Model):
         if self.reviews:
             return sum(review.rating for review in self.reviews) / len(self.reviews)
         return 0
+    
+    @property
+    def first_image(self):
+        """Get first image as data URI or return default"""
+        if self.images:
+            return self.images[0].to_data_uri()
+        return 'images/default_accommodation.jpg'
 
 class Favorite(db.Model):
     __tablename__ = 'favorites'

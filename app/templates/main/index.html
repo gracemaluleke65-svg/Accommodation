@@ -438,6 +438,7 @@
 </section>
 
 <!-- ========== FEATURED ACCOMMODATIONS ========== -->
+<!-- ========== FEATURED ACCOMMODATIONS ========== -->
 <section class="py-5">
     <div class="container py-5">
         <div class="section-header">
@@ -451,7 +452,8 @@
                 <div class="col-xl-4 col-lg-6">
                     <div class="accommodation-card shadow-sm">
                         <div class="position-relative">
-                            <img src="{{ url_for('static', filename=acc.images[0] if acc.images else 'img/default-accommodation.jpg') }}" 
+                            <!-- UPDATED: Use acc.first_image for Base64 data URI -->
+                            <img src="{{ acc.first_image }}" 
                                  class="card-img-top" alt="{{ acc.title }}"
                                  onerror="this.src='https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'">
                             <div class="price-badge">

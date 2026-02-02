@@ -95,29 +95,33 @@ def create_app(config_class='config.Config'):
         )
 
     # ------------------------------------------------------------------
-    # CRITICAL FIX: Admin seeding happens AFTER all tables are created
-    # via Flask-Migrate or manually, NOT on every app creation
+    # Database setup - ONLY creates tables if they don't exist
+    # NEVER drops tables - that was causing data loss!
     # ------------------------------------------------------------------
     with app.app_context():
-        # Only create tables if they don't exist (for first deploy)
-        # In production, use: flask db upgrade
         try:
+            # Use Flask-Migrate for schema changes, not drop/create
+            # This only creates tables if missing, never drops existing
             db.create_all()
-            # Seed admin after tables are guaranteed to exist
+            
+            # Seed admin user if missing
             seed_admin_user(app)
+            
         except Exception as e:
-            app.logger.warning(f"Database tables may already exist or error: {e}")
+            app.logger.warning(f"Database setup warning (tables may exist): {e}")
 
     return app
 
 def seed_admin_user(app):
-    """Seed admin user - called after table creation"""
+    """Seed admin user - safe to run multiple times"""
     try:
         from app.models import User
         admin_email = app.config.get('ADMIN_EMAIL', 'admin@unistay.com')
         admin_password = app.config.get('ADMIN_PASSWORD', 'admin123')
         
-        if not User.query.filter_by(email=admin_email).first():
+        # Only create if admin doesn't exist
+        existing_admin = User.query.filter_by(email=admin_email).first()
+        if not existing_admin:
             admin = User(
                 student_number='00000000',
                 full_name='Admin User',
@@ -131,7 +135,8 @@ def seed_admin_user(app):
             db.session.commit()
             app.logger.info(f"Admin user created: {admin_email}")
         else:
-            app.logger.info(f"Admin user already exists: {admin_email}")
+            app.logger.debug(f"Admin user exists: {admin_email}")
+            
     except Exception as e:
         app.logger.error(f"Error seeding admin: {e}")
         db.session.rollback()

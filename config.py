@@ -10,18 +10,21 @@ class Config:
         database_url = database_url.replace('postgres://', 'postgresql://', 1)
     
     # CRITICAL FIX: Add SSL mode for Render PostgreSQL (free tier requirement)
-    if 'render.com' in database_url:
+    if 'render.com' in database_url and '?' not in database_url:
         database_url += '?sslmode=require'
+    elif 'render.com' in database_url and 'sslmode' not in database_url:
+        database_url += '&sslmode=require'
     
     SQLALCHEMY_DATABASE_URI = database_url
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
-    # Fix for Render PostgreSQL connection issues (free tier)
+    # Connection pool settings for Render PostgreSQL stability
     SQLALCHEMY_ENGINE_OPTIONS = {
-        'pool_pre_ping': True,      # Checks connection health before using
-        'pool_recycle': 300,        # Recycle connections after 5 minutes
-        'pool_timeout': 30,         # Timeout for getting connection from pool
-        'max_overflow': 10          # Extra connections allowed beyond pool size
+        'pool_pre_ping': True,      # Verify connections before using
+        'pool_recycle': 300,        # Recycle every 5 minutes
+        'pool_timeout': 30,         # Wait 30 sec for connection
+        'max_overflow': 10,         # Allow 10 extra connections
+        'pool_size': 10             # Base pool size
     }
 
     # File upload settings
@@ -30,8 +33,8 @@ class Config:
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 
     # Stripe configuration (TEST MODE) - Use env vars in production
-    STRIPE_PUBLIC_KEY = os.environ.get('STRIPE_PUBLIC_KEY') or 'pk_test_51RCfdhC4ofBWBtBfsZMlapzUKBqk40bIESk3D1CBlCuE18KdF9rG8gmmmmjo1FoMwdR8pFit1Xhv2QSUNW8t1AH9R300T2mJ9WY4'
-    STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY') or 'sk_test_51RCfdhC4ofBWBtBf5YS6sIJNuqDpY5DnwHmPxXKFgxKzS3sZJjvd4r4ctRGT78Zq2Hmd2Cg26qft2uoNOdMXAm2o00eBqewKdw'
+    STRIPE_PUBLIC_KEY = os.environ.get('STRIPE_PUBLIC_KEY') or 'pk_test_your_key_here'
+    STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY') or 'sk_test_your_key_here'
     STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET')
 
     # Session settings

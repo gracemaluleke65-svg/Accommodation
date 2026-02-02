@@ -8,6 +8,7 @@ Create Date: 2026-02-03 00:00:00.000000
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
+from sqlalchemy import text
 
 # revision identifiers, used by Alembic.
 revision = '001'
@@ -17,40 +18,62 @@ depends_on = None
 
 
 def upgrade():
-    # Create accommodation_images table
-    op.create_table('accommodation_images',
-        sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('accommodation_id', sa.Integer(), nullable=False),
-        sa.Column('image_data', sa.Text(), nullable=False),
-        sa.Column('image_type', sa.String(length=50), nullable=False),
-        sa.Column('filename', sa.String(length=200), nullable=True),
-        sa.Column('created_at', sa.DateTime(), nullable=True),
-        sa.ForeignKeyConstraint(['accommodation_id'], ['accommodations.id'], ),
-        sa.PrimaryKeyConstraint('id')
-    )
+    # Use raw SQL with IF NOT EXISTS to avoid errors
+    conn = op.get_bind()
     
-    # Add profile picture columns to users table (if not exists)
-    try:
-        op.add_column('users', sa.Column('profile_picture_data', sa.Text(), nullable=True))
-        op.add_column('users', sa.Column('profile_picture_type', sa.String(length=50), nullable=True))
-    except:
-        pass  # Columns may already exist
+    # Create accommodation_images table if not exists
+    conn.execute(text("""
+        CREATE TABLE IF NOT EXISTS accommodation_images (
+            id SERIAL PRIMARY KEY,
+            accommodation_id INTEGER REFERENCES accommodations(id) ON DELETE CASCADE,
+            image_data TEXT NOT NULL,
+            image_type VARCHAR(50) NOT NULL,
+            filename VARCHAR(200),
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """))
     
-    # Drop old images column from accommodations (data will be lost - expected)
+    # Add columns to users table if not exist
     try:
-        op.drop_column('accommodations', 'images')
+        conn.execute(text("""
+            ALTER TABLE users 
+            ADD COLUMN IF NOT EXISTS profile_picture_data TEXT,
+            ADD COLUMN IF NOT EXISTS profile_picture_type VARCHAR(50)
+        """))
     except:
-        pass  # Column may not exist
+        pass
+    
+    # Drop old images column if exists
+    try:
+        conn.execute(text("""
+            ALTER TABLE accommodations 
+            DROP COLUMN IF EXISTS images
+        """))
+    except:
+        pass
 
 
 def downgrade():
-    op.drop_table('accommodation_images')
+    conn = op.get_bind()
+    
+    # Drop table if exists
+    conn.execute(text("DROP TABLE IF EXISTS accommodation_images"))
+    
+    # Drop columns if exist
     try:
-        op.drop_column('users', 'profile_picture_data')
-        op.drop_column('users', 'profile_picture_type')
+        conn.execute(text("""
+            ALTER TABLE users 
+            DROP COLUMN IF EXISTS profile_picture_data,
+            DROP COLUMN IF EXISTS profile_picture_type
+        """))
     except:
         pass
+    
+    # Recreate old column if needed
     try:
-        op.add_column('accommodations', sa.Column('images', postgresql.JSON(astext_type=sa.Text()), autoincrement=False, nullable=True))
+        conn.execute(text("""
+            ALTER TABLE accommodations 
+            ADD COLUMN IF NOT EXISTS images JSON
+        """))
     except:
         pass

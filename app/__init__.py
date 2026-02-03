@@ -32,68 +32,79 @@ def center_filter(value, width, fillchar=' '):
 def run_raw_migration(app):
     """Run raw SQL to add missing columns before SQLAlchemy tries to use them"""
     with app.app_context():
+        # Use a separate connection for migration to avoid transaction issues
+        from sqlalchemy import create_engine, text
+        from sqlalchemy.pool import NullPool
+        
+        database_url = app.config['SQLALCHEMY_DATABASE_URI']
+        engine = create_engine(database_url, poolclass=NullPool)
+        
         try:
-            from sqlalchemy import text
-            # Check if columns exist by trying to select one
-            try:
-                db.session.execute(text("SELECT student_number FROM users LIMIT 1"))
-                app.logger.info("Columns already exist")
+            with engine.connect() as connection:
+                # Check if student_number column exists using PostgreSQL system catalogs
+                check_sql = text("""
+                    SELECT column_name 
+                    FROM information_schema.columns 
+                    WHERE table_name = 'users' AND column_name = 'student_number';
+                """)
+                result = connection.execute(check_sql)
+                column_exists = result.fetchone() is not None
+                
+                if column_exists:
+                    app.logger.info("Migration: student_number column already exists")
+                    return True
+                
+                app.logger.info("Migration: Adding missing columns to users table...")
+                
+                # Add columns one by one with separate transactions
+                alter_statements = [
+                    "ALTER TABLE users ADD COLUMN IF NOT EXISTS student_number VARCHAR(8) DEFAULT '00000000';",
+                    "ALTER TABLE users ADD COLUMN IF NOT EXISTS id_number VARCHAR(13) DEFAULT '0000000000000';",
+                    "ALTER TABLE users ADD COLUMN IF NOT EXISTS phone_number VARCHAR(10) DEFAULT '0000000000';",
+                    "ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_picture_data TEXT;",
+                    "ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_picture_type VARCHAR(50);",
+                    "UPDATE users SET student_number = '00000000' WHERE student_number IS NULL;",
+                    "UPDATE users SET id_number = '0000000000000' WHERE id_number IS NULL;",
+                    "UPDATE users SET phone_number = '0000000000' WHERE phone_number IS NULL;",
+                    "ALTER TABLE users ALTER COLUMN student_number SET NOT NULL;",
+                    "ALTER TABLE users ALTER COLUMN id_number SET NOT NULL;",
+                    "ALTER TABLE users ALTER COLUMN phone_number SET NOT NULL;",
+                ]
+                
+                for sql in alter_statements:
+                    try:
+                        connection.execute(text(sql))
+                        connection.commit()
+                        app.logger.info(f"Executed: {sql[:50]}...")
+                    except Exception as e:
+                        connection.rollback()
+                        app.logger.warning(f"Skipped (may already exist): {sql[:50]}... - {e}")
+                
+                # Try to add unique constraints separately
+                try:
+                    connection.execute(text("""
+                        ALTER TABLE users ADD CONSTRAINT uq_users_student_number UNIQUE (student_number);
+                    """))
+                    connection.commit()
+                except Exception:
+                    connection.rollback()
+                    
+                try:
+                    connection.execute(text("""
+                        ALTER TABLE users ADD CONSTRAINT uq_users_id_number UNIQUE (id_number);
+                    """))
+                    connection.commit()
+                except Exception:
+                    connection.rollback()
+                
+                app.logger.info("Migration completed successfully!")
                 return True
-            except Exception:
-                app.logger.info("Adding missing columns to users table...")
                 
-            # Add columns using raw SQL (PostgreSQL compatible)
-            db.session.execute(text("""
-                ALTER TABLE users 
-                ADD COLUMN IF NOT EXISTS student_number VARCHAR(8) DEFAULT '00000000',
-                ADD COLUMN IF NOT EXISTS id_number VARCHAR(13) DEFAULT '0000000000000',
-                ADD COLUMN IF NOT EXISTS phone_number VARCHAR(10) DEFAULT '0000000000',
-                ADD COLUMN IF NOT EXISTS profile_picture_data TEXT,
-                ADD COLUMN IF NOT EXISTS profile_picture_type VARCHAR(50);
-            """))
-            
-            # Update any NULL values
-            db.session.execute(text("""
-                UPDATE users 
-                SET student_number = COALESCE(student_number, '00000000'),
-                    id_number = COALESCE(id_number, '0000000000000'),
-                    phone_number = COALESCE(phone_number, '0000000000')
-                WHERE student_number IS NULL OR id_number IS NULL OR phone_number IS NULL;
-            """))
-            
-            # Make columns non-nullable
-            db.session.execute(text("""
-                ALTER TABLE users 
-                ALTER COLUMN student_number SET NOT NULL,
-                ALTER COLUMN id_number SET NOT NULL,
-                ALTER COLUMN phone_number SET NOT NULL;
-            """))
-            
-            # Add unique constraints (ignore if they exist)
-            try:
-                db.session.execute(text("""
-                    ALTER TABLE users 
-                    ADD CONSTRAINT uq_users_student_number UNIQUE (student_number);
-                """))
-            except Exception:
-                pass  # Constraint might already exist
-                
-            try:
-                db.session.execute(text("""
-                    ALTER TABLE users 
-                    ADD CONSTRAINT uq_users_id_number UNIQUE (id_number);
-                """))
-            except Exception:
-                pass  # Constraint might already exist
-            
-            db.session.commit()
-            app.logger.info("Migration completed successfully!")
-            return True
-            
         except Exception as e:
-            db.session.rollback()
             app.logger.error(f"Migration error: {e}")
             return False
+        finally:
+            engine.dispose()
 
 # ------------------------------------------------------------------
 # App Factory
@@ -139,9 +150,11 @@ def create_app(config_class='config.Config'):
 
     # ------------------------------------------------------------------
     # CRITICAL: Run raw migration BEFORE registering blueprints
-    # This ensures columns exist before any model queries
     # ------------------------------------------------------------------
-    run_raw_migration(app)
+    migration_success = run_raw_migration(app)
+    
+    if not migration_success:
+        app.logger.warning("Migration failed or incomplete - app may crash on user queries")
 
     # ------------------------------------------------------------------
     # Register blueprints

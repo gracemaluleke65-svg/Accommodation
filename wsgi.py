@@ -1,17 +1,15 @@
 from app import create_app
 import os
+import sys
 
-app = create_app('config.Config')
-
-# Handle Render deployment - run migrations if possible
-if os.environ.get('RENDER'):
-    try:
-        from flask_migrate import upgrade
-        with app.app_context():
-            upgrade()
-            print("Database migrations applied successfully")
-    except Exception as e:
-        print(f"Migration warning (may be already applied): {e}")
+try:
+    app = create_app('config.Config')
+    print("Flask app created successfully", file=sys.stderr)
+except Exception as e:
+    print(f"Error creating app: {e}", file=sys.stderr)
+    import traceback
+    print(traceback.format_exc(), file=sys.stderr)
+    raise
 
 if __name__ == "__main__":
     app.run()

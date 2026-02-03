@@ -37,7 +37,7 @@ def reset_database_schema(app):
         
         try:
             with engine.connect() as connection:
-                # Get all table names that are not system tables
+                # Get all table names
                 result = connection.execute(text("""
                     SELECT tablename FROM pg_tables 
                     WHERE schemaname = 'public'
@@ -48,10 +48,9 @@ def reset_database_schema(app):
                 
                 app.logger.info(f"Found tables to drop: {tables}")
                 
-                # Drop all tables with CASCADE to handle dependencies
+                # Drop all tables with CASCADE
                 for table in tables:
                     try:
-                        # Use CASCADE to drop dependent objects
                         connection.execute(text(f'DROP TABLE IF EXISTS "{table}" CASCADE'))
                         connection.commit()
                         app.logger.info(f"Dropped table: {table}")
@@ -59,18 +58,20 @@ def reset_database_schema(app):
                         connection.rollback()
                         app.logger.warning(f"Could not drop {table}: {e}")
                 
-                # Also drop alembic version table if exists
+                # Drop alembic version
                 try:
                     connection.execute(text('DROP TABLE IF EXISTS alembic_version CASCADE'))
                     connection.commit()
                 except:
                     pass
                 
-                app.logger.info("Schema reset completed")
+                app.logger.info("Schema reset completed successfully")
                 return True
                 
         except Exception as e:
-            app.logger.error(f"Error in schema reset: {e}")
+            app.logger.error(f"Schema reset error: {e}")
+            import traceback
+            app.logger.error(traceback.format_exc())
             return False
         finally:
             engine.dispose()
@@ -82,50 +83,37 @@ def create_app(config_class='config.Config'):
     app = Flask(__name__, instance_relative_config=False)
     app.config.from_object(config_class)
 
-    # ------------------------------------------------------------------
     # Filters
-    # ------------------------------------------------------------------
     app.jinja_env.filters['rjust'] = rjust_filter
     app.jinja_env.filters['ljust'] = ljust_filter
     app.jinja_env.filters['center'] = center_filter
 
-    # ------------------------------------------------------------------
-    # Initialize Stripe
-    # ------------------------------------------------------------------
+    # Stripe
     stripe.api_key = app.config['STRIPE_SECRET_KEY']
 
-    # ------------------------------------------------------------------
-    # Bind extensions
-    # ------------------------------------------------------------------
+    # Extensions
     db.init_app(app)
     login_manager.init_app(app)
     migrate.init_app(app, db)
     csrf.init_app(app)
 
-    # ------------------------------------------------------------------
     # Login manager
-    # ------------------------------------------------------------------
     login_manager.login_view = 'auth.login'
     login_manager.login_message = 'Please log in to access this page.'
     login_manager.login_message_category = 'info'
 
-    # ------------------------------------------------------------------
-    # Ensure upload folders exist
-    # ------------------------------------------------------------------
+    # Upload folders
     os.makedirs(os.path.join(app.root_path, 'static/uploads/profiles'), exist_ok=True)
     os.makedirs(os.path.join(app.root_path, 'static/uploads/accommodations'), exist_ok=True)
     os.makedirs(os.path.join(app.root_path, 'static/images'), exist_ok=True)
     os.makedirs(os.path.join(app.root_path, 'static/img'), exist_ok=True)
 
-    # ------------------------------------------------------------------
-    # EMERGENCY RESET: Drop all tables before creating new ones
-    # REMOVE THIS AFTER FIRST SUCCESSFUL DEPLOY!
-    # ------------------------------------------------------------------
-    reset_database_schema(app)
+    # EMERGENCY RESET - Comment out after first deploy!
+    app.logger.info("Starting database reset...")
+    success = reset_database_schema(app)
+    app.logger.info(f"Database reset result: {success}")
 
-    # ------------------------------------------------------------------
     # Register blueprints
-    # ------------------------------------------------------------------
     from app.routes.main import bp as main_bp
     from app.routes.auth import bp as auth_bp
     from app.routes.bookings import bp as bookings_bp
@@ -136,9 +124,7 @@ def create_app(config_class='config.Config'):
     app.register_blueprint(bookings_bp)
     app.register_blueprint(admin_bp)
 
-    # ------------------------------------------------------------------
-    # Serve uploaded files
-    # ------------------------------------------------------------------
+    # Serve uploads
     @app.route('/static/uploads/<path:filename>')
     def uploaded_files(filename):
         return send_from_directory(
@@ -146,16 +132,21 @@ def create_app(config_class='config.Config'):
             filename
         )
 
-    # ------------------------------------------------------------------
-    # Create all tables fresh
-    # ------------------------------------------------------------------
+    # Create tables and seed
     with app.app_context():
         try:
+            app.logger.info("Creating all tables...")
             db.create_all()
-            app.logger.info("All tables created successfully")
+            app.logger.info("Tables created successfully")
+            
+            app.logger.info("Seeding admin user...")
             seed_admin_user(app)
+            app.logger.info("Admin seeding completed")
+            
         except Exception as e:
-            app.logger.error(f"Database creation error: {e}")
+            app.logger.error(f"Database setup error: {e}")
+            import traceback
+            app.logger.error(traceback.format_exc())
 
     return app
 
@@ -184,11 +175,11 @@ def seed_admin_user(app):
             app.logger.info(f"Admin exists: {admin_email}")
     except Exception as e:
         app.logger.error(f"Admin seed error: {e}")
+        import traceback
+        app.logger.error(traceback.format_exc())
         db.session.rollback()
 
-# ------------------------------------------------------------------
 # User loader
-# ------------------------------------------------------------------
 @login_manager.user_loader
 def load_user(user_id):
     from app.models import User

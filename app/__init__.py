@@ -27,7 +27,7 @@ def center_filter(value, width, fillchar=' '):
     return str(value).center(int(width), str(fillchar))
 
 def reset_database_schema(app):
-    """NUCLEAR OPTION: Drop all tables and recreate fresh"""
+    """Drop all tables using CASCADE"""
     with app.app_context():
         from sqlalchemy import create_engine, text
         from sqlalchemy.pool import NullPool
@@ -37,36 +37,40 @@ def reset_database_schema(app):
         
         try:
             with engine.connect() as connection:
-                # Disable foreign key checks temporarily (PostgreSQL uses constraints)
-                connection.execute(text("SET session_replication_role = 'replica';"))
-                connection.commit()
-                
-                # Get all table names
+                # Get all table names that are not system tables
                 result = connection.execute(text("""
                     SELECT tablename FROM pg_tables 
-                    WHERE schemaname = 'public';
+                    WHERE schemaname = 'public'
+                    AND tablename NOT LIKE 'pg_%'
+                    AND tablename NOT LIKE 'sql_%';
                 """))
-                tables = [row[0] for row in result]
+                tables = [row[0] for row in result.fetchall()]
                 
-                # Drop all tables with CASCADE
+                app.logger.info(f"Found tables to drop: {tables}")
+                
+                # Drop all tables with CASCADE to handle dependencies
                 for table in tables:
                     try:
-                        connection.execute(text(f'DROP TABLE IF EXISTS "{table}" CASCADE;'))
+                        # Use CASCADE to drop dependent objects
+                        connection.execute(text(f'DROP TABLE IF EXISTS "{table}" CASCADE'))
                         connection.commit()
                         app.logger.info(f"Dropped table: {table}")
                     except Exception as e:
                         connection.rollback()
                         app.logger.warning(f"Could not drop {table}: {e}")
                 
-                # Re-enable normal mode
-                connection.execute(text("SET session_replication_role = 'origin';"))
-                connection.commit()
+                # Also drop alembic version table if exists
+                try:
+                    connection.execute(text('DROP TABLE IF EXISTS alembic_version CASCADE'))
+                    connection.commit()
+                except:
+                    pass
                 
-                app.logger.info("All tables dropped successfully")
+                app.logger.info("Schema reset completed")
                 return True
                 
         except Exception as e:
-            app.logger.error(f"Error dropping tables: {e}")
+            app.logger.error(f"Error in schema reset: {e}")
             return False
         finally:
             engine.dispose()
@@ -79,7 +83,7 @@ def create_app(config_class='config.Config'):
     app.config.from_object(config_class)
 
     # ------------------------------------------------------------------
-    # Register Custom Filters
+    # Filters
     # ------------------------------------------------------------------
     app.jinja_env.filters['rjust'] = rjust_filter
     app.jinja_env.filters['ljust'] = ljust_filter
@@ -114,9 +118,8 @@ def create_app(config_class='config.Config'):
     os.makedirs(os.path.join(app.root_path, 'static/img'), exist_ok=True)
 
     # ------------------------------------------------------------------
-    # NUCLEAR OPTION: Reset database on startup
-    # WARNING: This deletes ALL data!
-    # Comment this out after first successful deploy!
+    # EMERGENCY RESET: Drop all tables before creating new ones
+    # REMOVE THIS AFTER FIRST SUCCESSFUL DEPLOY!
     # ------------------------------------------------------------------
     reset_database_schema(app)
 
@@ -134,7 +137,7 @@ def create_app(config_class='config.Config'):
     app.register_blueprint(admin_bp)
 
     # ------------------------------------------------------------------
-    # Development helper: serve uploaded files
+    # Serve uploaded files
     # ------------------------------------------------------------------
     @app.route('/static/uploads/<path:filename>')
     def uploaded_files(filename):
@@ -144,7 +147,7 @@ def create_app(config_class='config.Config'):
         )
 
     # ------------------------------------------------------------------
-    # Database setup - Create all tables fresh
+    # Create all tables fresh
     # ------------------------------------------------------------------
     with app.app_context():
         try:
@@ -152,7 +155,7 @@ def create_app(config_class='config.Config'):
             app.logger.info("All tables created successfully")
             seed_admin_user(app)
         except Exception as e:
-            app.logger.error(f"Database setup error: {e}")
+            app.logger.error(f"Database creation error: {e}")
 
     return app
 
@@ -163,7 +166,6 @@ def seed_admin_user(app):
         admin_email = app.config.get('ADMIN_EMAIL', 'admin@unistay.com')
         admin_password = app.config.get('ADMIN_PASSWORD', 'admin123')
         
-        # Check if admin exists
         existing = User.query.filter_by(email=admin_email).first()
         if not existing:
             admin = User(
@@ -178,6 +180,8 @@ def seed_admin_user(app):
             db.session.add(admin)
             db.session.commit()
             app.logger.info(f"Admin created: {admin_email}")
+        else:
+            app.logger.info(f"Admin exists: {admin_email}")
     except Exception as e:
         app.logger.error(f"Admin seed error: {e}")
         db.session.rollback()

@@ -95,22 +95,19 @@ def create_app(config_class='config.Config'):
         )
 
     # ------------------------------------------------------------------
-    # Database setup - NUCLEAR OPTION: Drop all and recreate
-    # WARNING: This will delete all existing data!
-    # Remove this after first successful deploy!
+    # Database setup - Only create tables if they don't exist
+    # DO NOT drop tables - let migrations handle schema changes
     # ------------------------------------------------------------------
     with app.app_context():
         try:
-            # NUCLEAR OPTION - Comment out after first deploy
-            db.drop_all()
+            # Only create tables that don't exist (safe operation)
             db.create_all()
-            app.logger.info("Database dropped and recreated successfully")
             
-            # Seed admin user
+            # Seed admin user if missing
             seed_admin_user(app)
             
         except Exception as e:
-            app.logger.error(f"Database setup error: {e}")
+            app.logger.warning(f"Database setup warning: {e}")
 
     return app
 

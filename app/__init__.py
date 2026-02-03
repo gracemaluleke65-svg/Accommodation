@@ -18,21 +18,17 @@ csrf = CSRFProtect()
 # Custom Jinja2 Filters
 # ------------------------------------------------------------------
 def rjust_filter(value, width, fillchar=' '):
-    """Right-justify string with padding"""
     return str(value).rjust(int(width), str(fillchar))
 
 def ljust_filter(value, width, fillchar=' '):
-    """Left-justify string with padding"""
     return str(value).ljust(int(width), str(fillchar))
 
 def center_filter(value, width, fillchar=' '):
-    """Center string with padding"""
     return str(value).center(int(width), str(fillchar))
 
-def run_raw_migration(app):
-    """Run raw SQL to add missing columns before SQLAlchemy tries to use them"""
+def reset_database_schema(app):
+    """NUCLEAR OPTION: Drop all tables and recreate fresh"""
     with app.app_context():
-        # Use a separate connection for migration to avoid transaction issues
         from sqlalchemy import create_engine, text
         from sqlalchemy.pool import NullPool
         
@@ -41,67 +37,36 @@ def run_raw_migration(app):
         
         try:
             with engine.connect() as connection:
-                # Check if student_number column exists using PostgreSQL system catalogs
-                check_sql = text("""
-                    SELECT column_name 
-                    FROM information_schema.columns 
-                    WHERE table_name = 'users' AND column_name = 'student_number';
-                """)
-                result = connection.execute(check_sql)
-                column_exists = result.fetchone() is not None
+                # Disable foreign key checks temporarily (PostgreSQL uses constraints)
+                connection.execute(text("SET session_replication_role = 'replica';"))
+                connection.commit()
                 
-                if column_exists:
-                    app.logger.info("Migration: student_number column already exists")
-                    return True
+                # Get all table names
+                result = connection.execute(text("""
+                    SELECT tablename FROM pg_tables 
+                    WHERE schemaname = 'public';
+                """))
+                tables = [row[0] for row in result]
                 
-                app.logger.info("Migration: Adding missing columns to users table...")
-                
-                # Add columns one by one with separate transactions
-                alter_statements = [
-                    "ALTER TABLE users ADD COLUMN IF NOT EXISTS student_number VARCHAR(8) DEFAULT '00000000';",
-                    "ALTER TABLE users ADD COLUMN IF NOT EXISTS id_number VARCHAR(13) DEFAULT '0000000000000';",
-                    "ALTER TABLE users ADD COLUMN IF NOT EXISTS phone_number VARCHAR(10) DEFAULT '0000000000';",
-                    "ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_picture_data TEXT;",
-                    "ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_picture_type VARCHAR(50);",
-                    "UPDATE users SET student_number = '00000000' WHERE student_number IS NULL;",
-                    "UPDATE users SET id_number = '0000000000000' WHERE id_number IS NULL;",
-                    "UPDATE users SET phone_number = '0000000000' WHERE phone_number IS NULL;",
-                    "ALTER TABLE users ALTER COLUMN student_number SET NOT NULL;",
-                    "ALTER TABLE users ALTER COLUMN id_number SET NOT NULL;",
-                    "ALTER TABLE users ALTER COLUMN phone_number SET NOT NULL;",
-                ]
-                
-                for sql in alter_statements:
+                # Drop all tables with CASCADE
+                for table in tables:
                     try:
-                        connection.execute(text(sql))
+                        connection.execute(text(f'DROP TABLE IF EXISTS "{table}" CASCADE;'))
                         connection.commit()
-                        app.logger.info(f"Executed: {sql[:50]}...")
+                        app.logger.info(f"Dropped table: {table}")
                     except Exception as e:
                         connection.rollback()
-                        app.logger.warning(f"Skipped (may already exist): {sql[:50]}... - {e}")
+                        app.logger.warning(f"Could not drop {table}: {e}")
                 
-                # Try to add unique constraints separately
-                try:
-                    connection.execute(text("""
-                        ALTER TABLE users ADD CONSTRAINT uq_users_student_number UNIQUE (student_number);
-                    """))
-                    connection.commit()
-                except Exception:
-                    connection.rollback()
-                    
-                try:
-                    connection.execute(text("""
-                        ALTER TABLE users ADD CONSTRAINT uq_users_id_number UNIQUE (id_number);
-                    """))
-                    connection.commit()
-                except Exception:
-                    connection.rollback()
+                # Re-enable normal mode
+                connection.execute(text("SET session_replication_role = 'origin';"))
+                connection.commit()
                 
-                app.logger.info("Migration completed successfully!")
+                app.logger.info("All tables dropped successfully")
                 return True
                 
         except Exception as e:
-            app.logger.error(f"Migration error: {e}")
+            app.logger.error(f"Error dropping tables: {e}")
             return False
         finally:
             engine.dispose()
@@ -149,12 +114,11 @@ def create_app(config_class='config.Config'):
     os.makedirs(os.path.join(app.root_path, 'static/img'), exist_ok=True)
 
     # ------------------------------------------------------------------
-    # CRITICAL: Run raw migration BEFORE registering blueprints
+    # NUCLEAR OPTION: Reset database on startup
+    # WARNING: This deletes ALL data!
+    # Comment this out after first successful deploy!
     # ------------------------------------------------------------------
-    migration_success = run_raw_migration(app)
-    
-    if not migration_success:
-        app.logger.warning("Migration failed or incomplete - app may crash on user queries")
+    reset_database_schema(app)
 
     # ------------------------------------------------------------------
     # Register blueprints
@@ -180,27 +144,28 @@ def create_app(config_class='config.Config'):
         )
 
     # ------------------------------------------------------------------
-    # Database setup - Create tables only (safe for existing data)
+    # Database setup - Create all tables fresh
     # ------------------------------------------------------------------
     with app.app_context():
         try:
             db.create_all()
+            app.logger.info("All tables created successfully")
             seed_admin_user(app)
         except Exception as e:
-            app.logger.warning(f"Database setup warning: {e}")
+            app.logger.error(f"Database setup error: {e}")
 
     return app
 
 def seed_admin_user(app):
-    """Seed admin user - safe to run multiple times"""
+    """Seed admin user"""
     try:
         from app.models import User
         admin_email = app.config.get('ADMIN_EMAIL', 'admin@unistay.com')
         admin_password = app.config.get('ADMIN_PASSWORD', 'admin123')
         
-        # Only create if admin doesn't exist
-        existing_admin = User.query.filter_by(email=admin_email).first()
-        if not existing_admin:
+        # Check if admin exists
+        existing = User.query.filter_by(email=admin_email).first()
+        if not existing:
             admin = User(
                 student_number='00000000',
                 full_name='Admin User',
@@ -212,12 +177,9 @@ def seed_admin_user(app):
             admin.set_password(admin_password)
             db.session.add(admin)
             db.session.commit()
-            app.logger.info(f"Admin user created: {admin_email}")
-        else:
-            app.logger.debug(f"Admin user exists: {admin_email}")
-            
+            app.logger.info(f"Admin created: {admin_email}")
     except Exception as e:
-        app.logger.error(f"Error seeding admin: {e}")
+        app.logger.error(f"Admin seed error: {e}")
         db.session.rollback()
 
 # ------------------------------------------------------------------

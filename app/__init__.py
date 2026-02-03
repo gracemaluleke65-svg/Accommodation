@@ -95,20 +95,22 @@ def create_app(config_class='config.Config'):
         )
 
     # ------------------------------------------------------------------
-    # Database setup - ONLY creates tables if they don't exist
-    # NEVER drops tables - that was causing data loss!
+    # Database setup - NUCLEAR OPTION: Drop all and recreate
+    # WARNING: This will delete all existing data!
+    # Remove this after first successful deploy!
     # ------------------------------------------------------------------
     with app.app_context():
         try:
-            # Use Flask-Migrate for schema changes, not drop/create
-            # This only creates tables if missing, never drops existing
+            # NUCLEAR OPTION - Comment out after first deploy
+            db.drop_all()
             db.create_all()
+            app.logger.info("Database dropped and recreated successfully")
             
-            # Seed admin user if missing
+            # Seed admin user
             seed_admin_user(app)
             
         except Exception as e:
-            app.logger.warning(f"Database setup warning (tables may exist): {e}")
+            app.logger.error(f"Database setup error: {e}")
 
     return app
 

@@ -214,57 +214,19 @@
     </div>
     
     <!-- Accommodation Preview -->
-    <div class="accommodation-preview">
-      <div class="row align-items-center">
-        <div class="col-md-3">
-          <div class="preview-card">
-            {% if accommodation.images and accommodation.images|length > 0 %}
-              <img src="{{ url_for('static', filename=accommodation.images[0]) }}" 
-                   alt="{{ accommodation.title }}" 
-                   class="preview-image">
-            {% else %}
-              <div class="preview-image bg-light d-flex align-items-center justify-content-center">
-                <i class="fas fa-home fa-2x text-muted"></i>
-              </div>
-            {% endif %}
-          </div>
-        </div>
-        <div class="col-md-9">
-          <div class="d-flex justify-content-between align-items-start">
-            <div>
-              <h3 class="h4 fw-bold mb-2">{{ accommodation.title }}</h3>
-              <p class="text-muted mb-1">
-                <i class="fas fa-map-marker-alt text-primary me-1"></i>
-                {{ accommodation.location }}
-              </p>
-              <div class="d-flex align-items-center">
-                <span class="badge bg-primary bg-opacity-10 text-primary me-2">
-                  <i class="fas fa-door-closed me-1"></i>
-                  {{ accommodation.room_type|title }}
-                </span>
-                <span class="badge bg-success bg-opacity-10 text-success">
-                  <i class="fas fa-rand-sign me-1"></i>
-                  R{{ accommodation.price_per_month|int }}/month
-                </span>
-              </div>
-            </div>
-            <div class="text-end">
-              <div class="rating-stars">
-                {% if accommodation.average_rating > 0 %}
-                  {% for i in range(5) %}
-                    <i class="fas fa-star{% if i >= accommodation.average_rating|int %} text-muted{% endif %}"></i>
-                  {% endfor %}
-                  <span class="ms-2 fw-bold">{{ accommodation.average_rating|round(1) }}</span>
-                {% else %}
-                  <span class="text-muted">No reviews yet</span>
-                {% endif %}
-              </div>
-              <small class="text-muted">{{ accommodation.reviews|length }} reviews</small>
-            </div>
-          </div>
-        </div>
+   <div class="col-md-3">
+  <div class="preview-card">
+    {% if accommodation.images and accommodation.images|length > 0 %}
+      <img src="{{ accommodation.first_image }}" 
+           alt="{{ accommodation.title }}" 
+           class="preview-image">
+    {% else %}
+      <div class="preview-image bg-light d-flex align-items-center justify-content-center">
+        <i class="fas fa-home fa-2x text-muted"></i>
       </div>
-    </div>
+    {% endif %}
+  </div>
+</div>
     
     <div class="row">
       <!-- Review Form -->

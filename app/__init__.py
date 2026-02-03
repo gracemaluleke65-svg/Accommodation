@@ -29,6 +29,72 @@ def center_filter(value, width, fillchar=' '):
     """Center string with padding"""
     return str(value).center(int(width), str(fillchar))
 
+def run_raw_migration(app):
+    """Run raw SQL to add missing columns before SQLAlchemy tries to use them"""
+    with app.app_context():
+        try:
+            from sqlalchemy import text
+            # Check if columns exist by trying to select one
+            try:
+                db.session.execute(text("SELECT student_number FROM users LIMIT 1"))
+                app.logger.info("Columns already exist")
+                return True
+            except Exception:
+                app.logger.info("Adding missing columns to users table...")
+                
+            # Add columns using raw SQL (PostgreSQL compatible)
+            db.session.execute(text("""
+                ALTER TABLE users 
+                ADD COLUMN IF NOT EXISTS student_number VARCHAR(8) DEFAULT '00000000',
+                ADD COLUMN IF NOT EXISTS id_number VARCHAR(13) DEFAULT '0000000000000',
+                ADD COLUMN IF NOT EXISTS phone_number VARCHAR(10) DEFAULT '0000000000',
+                ADD COLUMN IF NOT EXISTS profile_picture_data TEXT,
+                ADD COLUMN IF NOT EXISTS profile_picture_type VARCHAR(50);
+            """))
+            
+            # Update any NULL values
+            db.session.execute(text("""
+                UPDATE users 
+                SET student_number = COALESCE(student_number, '00000000'),
+                    id_number = COALESCE(id_number, '0000000000000'),
+                    phone_number = COALESCE(phone_number, '0000000000')
+                WHERE student_number IS NULL OR id_number IS NULL OR phone_number IS NULL;
+            """))
+            
+            # Make columns non-nullable
+            db.session.execute(text("""
+                ALTER TABLE users 
+                ALTER COLUMN student_number SET NOT NULL,
+                ALTER COLUMN id_number SET NOT NULL,
+                ALTER COLUMN phone_number SET NOT NULL;
+            """))
+            
+            # Add unique constraints (ignore if they exist)
+            try:
+                db.session.execute(text("""
+                    ALTER TABLE users 
+                    ADD CONSTRAINT uq_users_student_number UNIQUE (student_number);
+                """))
+            except Exception:
+                pass  # Constraint might already exist
+                
+            try:
+                db.session.execute(text("""
+                    ALTER TABLE users 
+                    ADD CONSTRAINT uq_users_id_number UNIQUE (id_number);
+                """))
+            except Exception:
+                pass  # Constraint might already exist
+            
+            db.session.commit()
+            app.logger.info("Migration completed successfully!")
+            return True
+            
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"Migration error: {e}")
+            return False
+
 # ------------------------------------------------------------------
 # App Factory
 # ------------------------------------------------------------------
@@ -72,6 +138,12 @@ def create_app(config_class='config.Config'):
     os.makedirs(os.path.join(app.root_path, 'static/img'), exist_ok=True)
 
     # ------------------------------------------------------------------
+    # CRITICAL: Run raw migration BEFORE registering blueprints
+    # This ensures columns exist before any model queries
+    # ------------------------------------------------------------------
+    run_raw_migration(app)
+
+    # ------------------------------------------------------------------
     # Register blueprints
     # ------------------------------------------------------------------
     from app.routes.main import bp as main_bp
@@ -95,17 +167,12 @@ def create_app(config_class='config.Config'):
         )
 
     # ------------------------------------------------------------------
-    # Database setup - Only create tables if they don't exist
-    # DO NOT drop tables - let migrations handle schema changes
+    # Database setup - Create tables only (safe for existing data)
     # ------------------------------------------------------------------
     with app.app_context():
         try:
-            # Only create tables that don't exist (safe operation)
             db.create_all()
-            
-            # Seed admin user if missing
             seed_admin_user(app)
-            
         except Exception as e:
             app.logger.warning(f"Database setup warning: {e}")
 

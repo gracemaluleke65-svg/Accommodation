@@ -723,15 +723,23 @@ def my_bookings():
 # The database will be initialized when the app starts via the before_first_request handler
 # or manually run db.create_all() in a separate migration script
 
+# Add this at the very bottom of app.py, replacing the existing if __name__ block
+
 if __name__ == '__main__':
-    # For local development only
-    with app.app_context():
-        try:
-            db.create_all()
-            seed_admin()
-            app.logger.info('Database initialized successfully')
-        except Exception as e:
-            app.logger.error(f'Database initialization error: {e}')
-    
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=app.config['DEBUG'])
+
+# This runs when gunicorn starts the app
+with app.app_context():
+    try:
+        # WARNING: This will drop all tables and recreate them
+        # Only use this once to fix the schema, then remove these two lines:
+        db.drop_all()
+        print("Dropped all tables")
+        
+        db.create_all()
+        seed_admin()
+        print("Database initialized successfully")
+    except Exception as e:
+        print(f"Database initialization error: {e}")
+        app.logger.error(f"Database initialization error: {e}")

@@ -318,6 +318,59 @@
         padding: 2rem;
     }
 
+    /* Test Mode Notice */
+    .test-mode-notice {
+        background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+        border-left: 4px solid #D97706;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .test-mode-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .test-mode-header i {
+        font-size: 1.25rem;
+        color: #D97706;
+    }
+
+    .test-mode-header strong {
+        color: #92400E;
+        font-size: 0.9rem;
+    }
+
+    .test-card-info {
+        background: white;
+        border-radius: 8px;
+        padding: 0.75rem;
+        margin-top: 0.75rem;
+        font-family: monospace;
+        font-size: 0.85rem;
+    }
+
+    .test-card-number {
+        background: #1F2937;
+        color: #10B981;
+        padding: 0.5rem;
+        border-radius: 6px;
+        font-family: monospace;
+        font-weight: bold;
+        text-align: center;
+        letter-spacing: 1px;
+        margin-bottom: 0.5rem;
+    }
+
+    .test-note {
+        font-size: 0.75rem;
+        color: #92400E;
+        margin-top: 0.5rem;
+    }
+
     .user-info-box {
         background: var(--light-bg);
         border-radius: 16px;
@@ -729,7 +782,7 @@
                     <div class="price-period">ZAR / month</div>
                     <div class="availability-status">
                         <i class="bi bi-check-circle-fill"></i>
-                        <span>{{ accommodation.available_spots() }} spots available</span>
+                        <span>{{ accommodation.capacity - accommodation.current_occupancy }} spots available</span>
                     </div>
                 </div>
 
@@ -814,7 +867,7 @@
                         <div class="price-period">ZAR / month • Cancel anytime</div>
                         <div class="availability-status">
                             <i class="bi bi-check-circle-fill"></i>
-                            <span class="spots-left">{{ accommodation.available_spots() }} spots left</span>
+                            <span class="spots-left">{{ accommodation.capacity - accommodation.current_occupancy }} spots left</span>
                         </div>
                     </div>
 
@@ -825,6 +878,30 @@
                             <h4><i class="bi bi-calendar-check"></i>Book Now</h4>
                         </div>
                         <div class="booking-body">
+                            <!-- TEST MODE NOTICE -->
+                            <div class="test-mode-notice">
+                                <div class="test-mode-header">
+                                    <i class="bi bi-info-circle-fill"></i>
+                                    <strong>💰 TEST MODE - NO real money will be deducted</strong>
+                                </div>
+                                <p style="font-size: 0.85rem; margin: 0; color: #92400E;">
+                                    This is a demo payment gateway. Use these test card details:
+                                </p>
+                                <div class="test-card-info">
+                                    <div class="test-card-number">
+                                        💳 4242 4242 4242 4242
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
+                                        <span>📅 Any future date</span>
+                                        <span>🔐 Any 3-digit CVC</span>
+                                    </div>
+                                    <div class="test-note">
+                                        <i class="bi bi-check-circle"></i> Successful payment: Use 4242 4242 4242 4242<br>
+                                        <i class="bi bi-x-circle"></i> Test declined: Use 4000 0000 0000 0002
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- User Info -->
                             <div class="user-info-box">
                                 <h6>Your Information</h6>
@@ -876,7 +953,7 @@
                                 </button>
                                 <div class="secure-badge">
                                     <i class="bi bi-shield-check"></i>
-                                    Secure SSL Encryption
+                                    Secure SSL Encryption • Test Mode
                                 </div>
                             </form>
                         </div>
@@ -944,7 +1021,6 @@
         const pricePerMonth = {{ accommodation.price_per_month }};
         const totalElement = document.getElementById('totalPrice');
         const durationLabel = document.getElementById('durationLabel');
-        const durationText = document.getElementById('durationText');
         
         let months, label;
         
@@ -1019,6 +1095,12 @@
             navigator.clipboard.writeText(window.location.href);
             showToast('Link copied to clipboard!', 'success');
         }
+    }
+
+    // Toast notification function
+    function showToast(message, type) {
+        // You can implement a toast notification system here
+        alert(message); // Simple fallback
     }
 
     // Smooth scroll to review section if hash present

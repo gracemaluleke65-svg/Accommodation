@@ -730,16 +730,19 @@ if __name__ == '__main__':
     app.run(host='0.0.0.0', port=port, debug=app.config['DEBUG'])
 
 # This runs when gunicorn starts the app
+# This runs when gunicorn starts the app
 with app.app_context():
     try:
-        # WARNING: This will drop all tables and recreate them
-        # Only use this once to fix the schema, then remove these two lines:
-        db.drop_all()
-        print("Dropped all tables")
-        
+        # ONLY create tables if they don't exist (safe!)
         db.create_all()
+        
+        # Create admin user if doesn't exist
         seed_admin()
-        print("Database initialized successfully")
+        
+        # Seed accommodations ONLY if they don't exist
+        seed_accommodations()
+        
+        print("✅ Application initialized successfully")
     except Exception as e:
-        print(f"Database initialization error: {e}")
+        print(f"❌ Database initialization error: {e}")
         app.logger.error(f"Database initialization error: {e}")

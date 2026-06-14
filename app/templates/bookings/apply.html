@@ -1,0 +1,505 @@
+{% extends "base.html" %}
+
+{% block title %}Apply for {{ accommodation.title }} - UniStay{% endblock %}
+
+{% block page_css %}
+<style>
+  /* BOOKING APPLICATION PAGE STYLES */
+  
+  .booking-card {
+    background: linear-gradient(135deg, #FFFFFF 0%, #F8F9FA 100%);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 111, 0, 0.1);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+  }
+  
+  .booking-header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .booking-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100px;
+    height: 100px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    transform: translate(30%, -30%);
+  }
+  
+  .accommodation-preview {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    margin-bottom: 2rem;
+    border-left: 4px solid var(--primary);
+  }
+  
+  .form-label {
+    font-weight: 600;
+    color: var(--secondary);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+  }
+  
+  .form-label i {
+    margin-right: 8px;
+    color: var(--primary);
+  }
+  
+  .form-control, .form-select {
+    border: 2px solid var(--gray-light);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+    background-color: white;
+  }
+  
+  .form-control:focus, .form-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 0.25rem rgba(255, 111, 0, 0.1);
+  }
+  
+  .form-control:read-only {
+    background-color: var(--gray-light);
+    border-color: var(--gray-medium);
+    cursor: not-allowed;
+  }
+  
+  .price-display {
+    background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
+    border: 2px solid #F59E0B;
+    border-radius: 15px;
+    padding: 1.5rem;
+    text-align: center;
+    animation: pulse 2s infinite;
+  }
+  
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.2); }
+    70% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+  }
+  
+  .price-amount {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--primary-dark);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .duration-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    font-weight: 600;
+    background: var(--gray-light);
+    color: var(--secondary);
+    margin: 0.25rem;
+    transition: all 0.3s ease;
+  }
+  
+  .duration-badge:hover {
+    background: var(--primary);
+    color: white;
+    transform: translateY(-2px);
+  }
+  
+  .duration-badge.active {
+    background: var(--primary);
+    color: white;
+  }
+  
+  .info-step {
+    background: white;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-left: 3px solid var(--primary);
+  }
+  
+  .info-step i {
+    color: var(--primary);
+    margin-right: 10px;
+  }
+  
+  .submit-btn {
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    border: none;
+    color: white;
+    width: 100%;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .submit-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(255, 111, 0, 0.3);
+  }
+  
+  .submit-btn:active {
+    transform: translateY(-1px);
+  }
+  
+  .submit-btn::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.3) 50%, transparent 70%);
+    transform: rotate(30deg);
+    transition: transform 0.6s;
+  }
+  
+  .submit-btn:hover::after {
+    transform: rotate(30deg) translate(20%, 20%);
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .booking-header {
+      padding: 1.5rem;
+    }
+    
+    .price-amount {
+      font-size: 2rem;
+    }
+    
+    .duration-badge {
+      padding: 0.4rem 0.8rem;
+      font-size: 0.9rem;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-10 col-xl-8">
+      <!-- Main Booking Card -->
+      <div class="booking-card mb-5">
+        <!-- Header Section -->
+        <div class="booking-header">
+          <div class="row align-items-center">
+            <div class="col-md-8">
+              <h1 class="mb-3"><i class="fas fa-file-signature me-2"></i>Booking Application</h1>
+              <p class="mb-0 opacity-75">Complete this form to apply for accommodation</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+              <div class="d-inline-block bg-white text-primary rounded-pill px-3 py-1">
+                <i class="fas fa-clock me-1"></i> Quick Process
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Form Content -->
+        <div class="p-4 p-md-5">
+          <!-- Accommodation Preview -->
+          <div class="accommodation-preview">
+            <div class="row align-items-center">
+              <div class="col-md-8">
+                <h4 class="mb-2">{{ accommodation.title }}</h4>
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                  <span class="badge bg-primary-subtle text-primary">
+                    <i class="fas fa-map-marker-alt me-1"></i>{{ accommodation.location }}
+                  </span>
+                  <span class="badge bg-success-subtle text-success">
+                    <i class="fas fa-bed me-1"></i>{{ accommodation.room_type|title }}
+                  </span>
+                  <span class="badge bg-warning-subtle text-warning">
+                    <i class="fas fa-users me-1"></i>{{ accommodation.current_occupancy }}/{{ accommodation.capacity }} Occupied
+                  </span>
+                </div>
+                <p class="text-muted mb-0">{{ accommodation.description[:150] }}...</p>
+              </div>
+              <div class="col-md-4 text-md-end">
+                <div class="h3 fw-bold text-primary mb-0">R{{ accommodation.price_per_month }}</div>
+                <small class="text-muted">per month</small>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Application Form -->
+          <form method="POST" class="needs-validation" novalidate>
+            {{ form.hidden_tag() }}
+            
+            <!-- Student Information Section -->
+            <div class="mb-5">
+              <h4 class="mb-4 border-bottom pb-2">
+                <i class="fas fa-user-graduate text-primary me-2"></i>Student Information
+              </h4>
+              
+              <div class="row g-4">
+                <div class="col-md-6">
+                  <label class="form-label">
+                    <i class="fas fa-user"></i> Full Name
+                  </label>
+                  <input type="text" class="form-control" value="{{ current_user.full_name }}" readonly>
+                  <div class="form-text">Name cannot be changed during application</div>
+                </div>
+                
+                <div class="col-md-6">
+                  <label class="form-label">
+                    <i class="fas fa-envelope"></i> Email Address
+                  </label>
+                  <input type="email" class="form-control" value="{{ current_user.email }}" readonly>
+                  <div class="form-text">Confirmation will be sent to this email</div>
+                </div>
+                
+                <div class="col-md-6">
+                  <label class="form-label">
+                    <i class="fas fa-id-card"></i> Student Number
+                  </label>
+                  <input type="text" class="form-control" value="{{ current_user.student_number }}" readonly>
+                </div>
+                
+                <div class="col-md-6">
+                  <label class="form-label">
+                    <i class="fas fa-phone"></i> Phone Number
+                  </label>
+                  <input type="text" class="form-control" value="{{ current_user.phone_number }}" readonly>
+                  <div class="form-text">Important for booking updates</div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Booking Details Section -->
+            <div class="mb-5">
+              <h4 class="mb-4 border-bottom pb-2">
+                <i class="fas fa-calendar-alt text-primary me-2"></i>Booking Details
+              </h4>
+              
+              <!-- Duration Selection -->
+              <div class="mb-4">
+                <label class="form-label mb-3">
+                  <i class="fas fa-calendar"></i> Select Duration
+                </label>
+                <div class="row g-3" id="durationOptions">
+                  <div class="col-md-6">
+                    <div class="duration-badge w-100 text-center {% if form.duration.data != 'semester' %}active{% endif %}" 
+                         data-value="annual" onclick="selectDuration('annual')">
+                      <i class="fas fa-calendar-year me-2"></i>
+                      Annual (10 Months)
+                      <div class="small mt-1">Best Value - Save 10%</div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="duration-badge w-100 text-center {% if form.duration.data == 'semester' %}active{% endif %}" 
+                         data-value="semester" onclick="selectDuration('semester')">
+                      <i class="fas fa-calendar-alt me-2"></i>
+                      Semester (5 Months)
+                      <div class="small mt-1">Flexible Option</div>
+                    </div>
+                  </div>
+                </div>
+                {{ form.duration(id="durationField", class="d-none") }}
+              </div>
+              
+              <!-- Period Selection (Conditional) -->
+              <div class="mb-4 {% if form.duration.data != 'semester' %}d-none{% endif %}" id="periodDiv">
+                <label class="form-label">
+                  <i class="fas fa-clock"></i> Select Semester Period
+                </label>
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <div class="duration-badge w-100 text-center {% if form.period.data == 'SEM1' %}active{% endif %}" 
+                         data-value="SEM1" onclick="selectPeriod('SEM1')">
+                      <i class="fas fa-sun me-2"></i>
+                      Semester 1
+                      <div class="small mt-1">February - June</div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="duration-badge w-100 text-center {% if form.period.data == 'SEM2' %}active{% endif %}" 
+                         data-value="SEM2" onclick="selectPeriod('SEM2')">
+                      <i class="fas fa-snowflake me-2"></i>
+                      Semester 2
+                      <div class="small mt-1">July - November</div>
+                    </div>
+                  </div>
+                </div>
+                {{ form.period(id="periodField", class="d-none") }}
+              </div>
+              
+              <!-- Payment Responsible -->
+              <div class="mb-4">
+                <label class="form-label" for="payment_responsible">
+                  <i class="fas fa-money-check-alt"></i> Payment Responsible
+                </label>
+                {{ form.payment_responsible(class="form-select form-select-lg") }}
+                <div class="form-text">Select who will be responsible for payments</div>
+              </div>
+            </div>
+            
+            <!-- Price Summary -->
+            <div class="mb-5">
+              <h4 class="mb-4 border-bottom pb-2">
+                <i class="fas fa-receipt text-primary me-2"></i>Price Summary
+              </h4>
+              
+              <div class="price-display">
+                <div class="mb-3">
+                  <small class="text-muted">TOTAL AMOUNT DUE</small>
+                  <div class="price-amount" id="totalPrice">R{{ accommodation.price_per_month * 10 }}</div>
+                  <div class="text-muted">Inclusive of all fees</div>
+                </div>
+                
+                <div class="row text-start">
+                  <div class="col-6">
+                    <div class="small text-muted">Monthly Rate</div>
+                    <div class="fw-semibold">R{{ accommodation.price_per_month }}</div>
+                  </div>
+                  <div class="col-6">
+                    <div class="small text-muted">Duration</div>
+                    <div class="fw-semibold" id="durationText">10 months (Annual)</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Important Information -->
+            <div class="mb-4">
+              <div class="info-step">
+                <i class="fas fa-info-circle"></i>
+                <strong>Important:</strong> This application will reserve your spot. Payment must be completed within 24 hours.
+              </div>
+              <div class="info-step">
+                <i class="fas fa-check-circle"></i>
+                <strong>No Hidden Fees:</strong> The displayed price includes all accommodation fees.
+              </div>
+              <div class="info-step">
+                <i class="fas fa-shield-alt"></i>
+                <strong>Secure Process:</strong> Your information is protected with 256-bit SSL encryption.
+              </div>
+            </div>
+            
+            <!-- Submit Button -->
+            <button type="submit" class="submit-btn mt-4">
+              <i class="fas fa-paper-plane me-2"></i>Submit Application
+            </button>
+            
+            <!-- Terms Agreement -->
+            <div class="text-center mt-3">
+              <small class="text-muted">
+                By submitting, you agree to our 
+                <a href="#" class="text-primary">Terms of Service</a> and 
+                <a href="#" class="text-primary">Privacy Policy</a>
+              </small>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Price calculation
+  const pricePerMonth = {{ accommodation.price_per_month }};
+  
+  // Duration selection
+  function selectDuration(duration) {
+    document.querySelector('#durationField').value = duration;
+    
+    // Update UI
+    document.querySelectorAll('.duration-badge').forEach(badge => {
+      badge.classList.remove('active');
+    });
+    event.target.closest('.duration-badge').classList.add('active');
+    
+    // Show/hide period selection
+    const periodDiv = document.querySelector('#periodDiv');
+    if (duration === 'semester') {
+      periodDiv.classList.remove('d-none');
+    } else {
+      periodDiv.classList.add('d-none');
+    }
+    
+    // Update price
+    updatePrice();
+  }
+  
+  // Period selection
+  function selectPeriod(period) {
+    document.querySelector('#periodField').value = period;
+    
+    // Update UI
+    document.querySelectorAll('#periodDiv .duration-badge').forEach(badge => {
+      badge.classList.remove('active');
+    });
+    event.target.closest('.duration-badge').classList.add('active');
+  }
+  
+  // Update price display
+  function updatePrice() {
+    const duration = document.querySelector('#durationField').value;
+    const months = duration === 'semester' ? 5 : 10;
+    const totalPrice = pricePerMonth * months;
+    
+    // Format price with thousand separators
+    const formattedPrice = new Intl.NumberFormat('en-ZA', {
+      style: 'currency',
+      currency: 'ZAR',
+      minimumFractionDigits: 0
+    }).format(totalPrice);
+    
+    // Update display
+    document.querySelector('#totalPrice').textContent = formattedPrice;
+    document.querySelector('#durationText').textContent = 
+      `${months} months (${duration === 'semester' ? 'Semester' : 'Annual'})`;
+    
+    // Add animation
+    const priceElement = document.querySelector('#totalPrice');
+    priceElement.style.transform = 'scale(1.1)';
+    setTimeout(() => {
+      priceElement.style.transform = 'scale(1)';
+    }, 300);
+  }
+  
+  // Initialize form
+  document.addEventListener('DOMContentLoaded', function() {
+    // Set initial values from form data
+    const durationField = document.querySelector('#durationField');
+    const periodField = document.querySelector('#periodField');
+    
+    if (durationField.value) {
+      selectDuration(durationField.value);
+    }
+    
+    if (periodField.value) {
+      selectPeriod(periodField.value);
+    }
+    
+    // Form validation
+    const form = document.querySelector('.needs-validation');
+    form.addEventListener('submit', function(event) {
+      if (!form.checkValidity()) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      form.classList.add('was-validated');
+    });
+  });
+</script>
+{% endblock %}

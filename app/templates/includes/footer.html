@@ -1,0 +1,357 @@
+<footer class="bg-dark text-light">
+    <div class="container py-5">
+        <div class="row g-5">
+            <!-- Brand/Intro Section -->
+            <div class="col-lg-4 col-md-6">
+                <div class="bg-gradient-primary rounded-3 p-4 h-100 shadow-sm">
+                    <a href="{{ url_for('main.index') }}" class="text-decoration-none">
+                        <h1 class="text-white fw-bold mb-3">
+                            <i class="fas fa-home-heart me-2"></i>UniStay
+                        </h1>
+                    </a>
+                    <p class="text-white-75 mb-4">
+                        Premium student accommodation platform connecting students with safe, affordable, and convenient living spaces near campuses across South Africa.
+                    </p>
+                    <div class="d-flex align-items-center">
+                        <div class="bg-white text-primary rounded-pill px-3 py-1 me-3">
+                            <small><i class="fas fa-shield-alt me-1"></i> Verified</small>
+                        </div>
+                        <div class="bg-white text-primary rounded-pill px-3 py-1">
+                            <small><i class="fas fa-award me-1"></i> Trusted</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Section -->
+            <div class="col-lg-3 col-md-6">
+                <div class="h-100">
+                    <h5 class="text-primary fw-bold mb-4 position-relative pb-3">
+                        <i class="fas fa-headset me-2"></i>Contact Us
+                        <span class="position-absolute bottom-0 start-0 w-25 bg-primary" style="height: 3px;"></span>
+                    </h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-3 d-flex align-items-start">
+                            <i class="fas fa-map-marker-alt text-primary me-3 mt-1"></i>
+                            <span>Sandton, Johannesburg<br><small class="text-white-50">Main Campus District</small></span>
+                        </li>
+                        <li class="mb-3 d-flex align-items-center">
+                            <i class="fas fa-phone-alt text-primary me-3"></i>
+                            <span>+27 11 123 4567</span>
+                        </li>
+                        <li class="mb-4 d-flex align-items-center">
+                            <i class="fas fa-envelope text-primary me-3"></i>
+                            <span>support@unistay.com</span>
+                        </li>
+                    </ul>
+                    <div class="d-flex mt-4">
+                        <a class="btn btn-outline-light btn-social rounded-circle me-2 transition-all" href="#">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a class="btn btn-outline-light btn-social rounded-circle me-2 transition-all" href="#">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a class="btn btn-outline-light btn-social rounded-circle me-2 transition-all" href="#">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a class="btn btn-outline-light btn-social rounded-circle transition-all" href="#">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Links & Services -->
+            <div class="col-lg-5">
+                <div class="row g-4">
+                    <!-- Quick Links -->
+                    <div class="col-md-6">
+                        <h5 class="text-primary fw-bold mb-4 position-relative pb-3">
+                            <i class="fas fa-link me-2"></i>Quick Links
+                            <span class="position-absolute bottom-0 start-0 w-25 bg-primary" style="height: 3px;"></span>
+                        </h5>
+                        <ul class="list-unstyled footer-links">
+                            <li class="mb-3">
+                                <a href="{{ url_for('main.index') }}" class="text-white-75 text-decoration-none d-flex align-items-center hover-lift">
+                                    <i class="fas fa-chevron-right me-2 text-primary small"></i>Home
+                                </a>
+                            </li>
+                            <li class="mb-3">
+                                <a href="{{ url_for('main.accommodations') }}" class="text-white-75 text-decoration-none d-flex align-items-center hover-lift">
+                                    <i class="fas fa-chevron-right me-2 text-primary small"></i>Accommodations
+                                </a>
+                            </li>
+                            <li class="mb-3">
+                                <a href="{{ url_for('main.favorites') }}" class="text-white-75 text-decoration-none d-flex align-items-center hover-lift">
+                                    <i class="fas fa-chevron-right me-2 text-primary small"></i>Favorites
+                                </a>
+                            </li>
+                            <li class="mb-3">
+                                <a href="{{ url_for('main.about') }}" class="text-white-75 text-decoration-none d-flex align-items-center hover-lift">
+                                    <i class="fas fa-chevron-right me-2 text-primary small"></i>About Us
+                                </a>
+                            </li>
+                            <li class="mb-3">
+                                <a href="{{ url_for('main.contact') }}" class="text-white-75 text-decoration-none d-flex align-items-center hover-lift">
+                                    <i class="fas fa-chevron-right me-2 text-primary small"></i>Contact
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Services -->
+                    <div class="col-md-6">
+                        <h5 class="text-primary fw-bold mb-4 position-relative pb-3">
+                            <i class="fas fa-concierge-bell me-2"></i>Services
+                            <span class="position-absolute bottom-0 start-0 w-25 bg-primary" style="height: 3px;"></span>
+                        </h5>
+                        <ul class="list-unstyled">
+                            <li class="mb-3">
+                                <div class="d-flex align-items-start">
+                                    <i class="fas fa-check-circle text-success me-2 mt-1"></i>
+                                    <span class="text-white-75">Student Accommodation</span>
+                                </div>
+                            </li>
+                            <li class="mb-3">
+                                <div class="d-flex align-items-start">
+                                    <i class="fas fa-check-circle text-success me-2 mt-1"></i>
+                                    <span class="text-white-75">NSFAS Support</span>
+                                </div>
+                            </li>
+                            <li class="mb-3">
+                                <div class="d-flex align-items-start">
+                                    <i class="fas fa-check-circle text-success me-2 mt-1"></i>
+                                    <span class="text-white-75">Secure Booking</span>
+                                </div>
+                            </li>
+                            <li class="mb-3">
+                                <div class="d-flex align-items-start">
+                                    <i class="fas fa-check-circle text-success me-2 mt-1"></i>
+                                    <span class="text-white-75">24/7 Support</span>
+                                </div>
+                            </li>
+                            <li class="mb-3">
+                                <div class="d-flex align-items-start">
+                                    <i class="fas fa-check-circle text-success me-2 mt-1"></i>
+                                    <span class="text-white-75">Payment Integration</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Newsletter Section -->
+        <div class="row mt-5 pt-4 border-top border-secondary">
+            <div class="col-lg-6 mb-4 mb-lg-0">
+                <h6 class="text-primary fw-bold mb-3">Stay Updated</h6>
+                <p class="text-white-75 mb-3">Subscribe to our newsletter for the latest accommodation deals and student resources.</p>
+                <form class="d-flex">
+                    <input type="email" class="form-control form-control-sm rounded-start-pill me-2 border-0" placeholder="Your email address" aria-label="Email">
+                    <button type="submit" class="btn btn-primary btn-sm rounded-end-pill px-4">
+                        <i class="fas fa-paper-plane me-1"></i> Subscribe
+                    </button>
+                </form>
+            </div>
+            <div class="col-lg-6">
+                <h6 class="text-primary fw-bold mb-3">Payment Partners</h6>
+                <div class="d-flex align-items-center flex-wrap">
+                    <div class="bg-white rounded-2 p-2 me-3 mb-2">
+                        <i class="fab fa-cc-stripe fa-2x text-primary"></i>
+                    </div>
+                    <div class="bg-white rounded-2 p-2 me-3 mb-2">
+                        <i class="fab fa-cc-paypal fa-2x text-primary"></i>
+                    </div>
+                    <div class="bg-white rounded-2 p-2 me-3 mb-2">
+                        <i class="fas fa-university fa-2x text-primary"></i>
+                    </div>
+                    <div class="bg-white rounded-2 p-2 mb-2">
+                        <i class="fas fa-mobile-alt fa-2x text-primary"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Copyright Section -->
+    <div class="container-fluid py-4 border-top border-secondary">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+                    <p class="mb-0 text-white-50">
+                        &copy; <span id="currentYear"></span> UniStay. All rights reserved.
+                        <span class="d-block d-md-inline ms-md-3">
+                            <i class="fas fa-heart text-danger mx-1"></i> Made for students
+                        </span>
+                    </p>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <div class="footer-menu">
+                        <a href="{{ url_for('main.index') }}" class="text-white-50 text-decoration-none me-3 hover-lift">Home</a>
+                        <a href="#" class="text-white-50 text-decoration-none me-3 hover-lift">Privacy Policy</a>
+                        <a href="#" class="text-white-50 text-decoration-none me-3 hover-lift">Terms & Conditions</a>
+                        <a href="#" class="text-white-50 text-decoration-none me-3 hover-lift">Help</a>
+                        <a href="#" class="text-white-50 text-decoration-none hover-lift">FAQs</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- JavaScript for dynamic year -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set current year
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+        
+        // Add smooth scroll to top
+        const backToTop = document.createElement('div');
+        backToTop.className = 'back-to-top';
+        backToTop.innerHTML = '<i class="fas fa-chevron-up"></i>';
+        backToTop.style.cssText = `
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #FF6F00 0%, #FFA040 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(255, 111, 0, 0.3);
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(20px);
+        `;
+        document.body.appendChild(backToTop);
+        
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 300) {
+                backToTop.style.opacity = '1';
+                backToTop.style.transform = 'translateY(0)';
+            } else {
+                backToTop.style.opacity = '0';
+                backToTop.style.transform = 'translateY(20px)';
+            }
+        });
+        
+        backToTop.addEventListener('click', function() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    });
+</script>
+
+<style>
+    /* Footer Specific Styles */
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, rgba(255, 111, 0, 0.2) 0%, rgba(255, 160, 64, 0.1) 100%);
+        border: 1px solid rgba(255, 111, 0, 0.3);
+    }
+    
+    .btn-social {
+        width: 40px;
+        height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .btn-social:hover {
+        transform: translateY(-5px) scale(1.1);
+        background: #FF6F00;
+        border-color: #FF6F00;
+        color: white !important;
+    }
+    
+    .transition-all {
+        transition: all 0.3s ease;
+    }
+    
+    .hover-lift {
+        transition: all 0.2s ease;
+    }
+    
+    .hover-lift:hover {
+        color: #FFA040 !important;
+        transform: translateX(5px);
+    }
+    
+    .footer-links li {
+        border-left: 2px solid transparent;
+        padding-left: 10px;
+        transition: all 0.3s ease;
+    }
+    
+    .footer-links li:hover {
+        border-left-color: #FF6F00;
+        padding-left: 15px;
+    }
+    
+    .rounded-start-pill {
+        border-top-right-radius: 0 !important;
+        border-bottom-right-radius: 0 !important;
+    }
+    
+    .rounded-end-pill {
+        border-top-left-radius: 0 !important;
+        border-bottom-left-radius: 0 !important;
+    }
+    
+    .back-to-top:hover {
+        transform: translateY(-3px) scale(1.1);
+        box-shadow: 0 6px 20px rgba(255, 111, 0, 0.4);
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .footer-links li {
+            padding-left: 0;
+            border-left: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .footer-links li:hover {
+            padding-left: 0;
+            border-left: none;
+            border-bottom-color: #FF6F00;
+        }
+        
+        .btn-social {
+            width: 36px;
+            height: 36px;
+        }
+    }
+    
+    /* Animation for footer elements */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .footer > .container > .row > div {
+        animation: fadeInUp 0.6s ease forwards;
+    }
+    
+    .footer > .container > .row > div:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+    
+    .footer > .container > .row > div:nth-child(3) {
+        animation-delay: 0.4s;
+    }
+</style>

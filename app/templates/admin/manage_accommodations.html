@@ -1,0 +1,546 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Accommodations - UniStay Admin{% endblock %}
+
+{% block page_css %}
+<style>
+  /* MANAGE ACCOMMODATIONS SPECIFIC STYLES */
+  
+  /* Page Header */
+  .page-header {
+    background: linear-gradient(135deg, rgba(255, 111, 0, 0.1) 0%, rgba(255, 160, 64, 0.05) 100%);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border-left: 4px solid var(--primary);
+  }
+  
+  /* Action Button */
+  .action-btn {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 50px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: white !important;
+  }
+  
+  .action-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(255, 111, 0, 0.2);
+  }
+  
+  /* Table Enhancements */
+  .table-container {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  }
+  
+  .table-header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white !important;
+  }
+  
+  .table-header th {
+    border: none !important;
+    padding: 1rem !important;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .table-hover tbody tr {
+    transition: all 0.2s ease;
+  }
+  
+  .table-hover tbody tr:hover {
+    background-color: rgba(255, 111, 0, 0.05) !important;
+    transform: translateX(5px);
+  }
+  
+  .table-hover tbody td {
+    padding: 1.25rem 1rem !important;
+    vertical-align: middle;
+    border-color: #f0f0f0 !important;
+  }
+  
+  /* Accommodation Image */
+  .accommodation-img {
+    width: 90px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+  }
+  
+  .accommodation-img:hover {
+    transform: scale(1.1);
+    border-color: var(--primary);
+  }
+  
+  /* Status Badge */
+  .status-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 500;
+    font-size: 0.85rem;
+    display: inline-block;
+  }
+  
+  .status-available {
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    color: white;
+  }
+  
+  .status-fully_occupied {
+    background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+    color: white;
+  }
+  
+  /* Action Buttons */
+  .action-buttons {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  .btn-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    text-decoration: none;
+  }
+  
+  .btn-edit {
+    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+    color: white;
+  }
+  
+  .btn-edit:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(245, 158, 11, 0.3);
+  }
+  
+  .btn-delete {
+    background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+    color: white;
+    border: none;
+  }
+  
+  .btn-delete:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
+  }
+  
+  /* Empty State */
+  .empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: var(--gray-medium);
+  }
+  
+  .empty-state-icon {
+    font-size: 4rem;
+    color: var(--gray-light);
+    margin-bottom: 1rem;
+  }
+  
+  /* Search and Filter Bar */
+  .filter-bar {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 15px;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  }
+  
+  /* Stats Cards */
+  .quick-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  
+  .stat-card-small {
+    background: white;
+    padding: 1.25rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+  
+  .stat-card-small h6 {
+    color: var(--secondary);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+  }
+  
+  .stat-card-small .count {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary);
+  }
+  
+  /* Responsive Table */
+  @media (max-width: 768px) {
+    .table-container {
+      overflow-x: auto;
+    }
+    
+    .table {
+      min-width: 800px;
+    }
+    
+    .quick-stats {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .quick-stats {
+      grid-template-columns: 1fr;
+    }
+    
+    .page-header {
+      text-align: center;
+    }
+    
+    .action-btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+      <div class="mb-3 mb-md-0">
+        <h1 class="h2 mb-2 text-dark fw-bold">
+          <i class="fas fa-building me-2 text-primary"></i>Manage Accommodations
+        </h1>
+        <p class="text-muted mb-0">Manage all student accommodation listings, availability, and details</p>
+      </div>
+      <a href="{{ url_for('admin.add_accommodation') }}" class="action-btn">
+        <i class="fas fa-plus-circle"></i>
+        Add New Accommodation
+      </a>
+    </div>
+  </div>
+
+  <!-- Quick Stats -->
+  <div class="quick-stats">
+    <div class="stat-card-small">
+      <h6><i class="fas fa-home me-1"></i> Total Listings</h6>
+      <div class="count">{{ accommodations|length }}</div>
+    </div>
+    <div class="stat-card-small">
+      <h6><i class="fas fa-check-circle me-1 text-success"></i> Available</h6>
+      <div class="count">{{ accommodations|selectattr('is_available')|list|length }}</div>
+    </div>
+    <div class="stat-card-small">
+      <h6><i class="fas fa-times-circle me-1 text-danger"></i> Fully Occupied</h6>
+      <div class="count">{{ accommodations|rejectattr('is_available')|list|length }}</div>
+    </div>
+    <div class="stat-card-small">
+      <h6><i class="fas fa-user-friends me-1 text-warning"></i> Total Capacity</h6>
+      <div class="count">{{ accommodations|map(attribute='capacity')|sum }}</div>
+    </div>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="filter-bar">
+    <div class="row g-3 align-items-center">
+      <div class="col-md-6">
+        <div class="input-group">
+          <span class="input-group-text bg-light border-0">
+            <i class="fas fa-search text-muted"></i>
+          </span>
+          <input type="text" class="form-control border-0 bg-light" id="searchInput" placeholder="Search accommodations...">
+        </div>
+      </div>
+      <div class="col-md-3">
+        <select class="form-select bg-light border-0" id="statusFilter">
+          <option value="">All Status</option>
+          <option value="available">Available</option>
+          <option value="fully_occupied">Fully Occupied</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <select class="form-select bg-light border-0" id="roomTypeFilter">
+          <option value="">All Room Types</option>
+          <option value="single">Single Room</option>
+          <option value="double">Double Room</option>
+          <option value="shared">Shared Room</option>
+          <option value="studio">Studio Apartment</option>
+          <option value="apartment">Full Apartment</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Accommodations Table -->
+  <div class="table-container">
+    {% if accommodations %}
+      <div class="table-responsive">
+        <table class="table table-hover mb-0" id="accommodationsTable">
+          <thead class="table-header">
+            <tr>
+              <th style="width: 100px;">Image</th>
+              <th>Accommodation Details</th>
+              <th>Location</th>
+              <th>Price</th>
+              <th>Occupancy</th>
+              <th>Status</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for acc in accommodations %}
+              <tr data-status="{{ acc.status }}" data-room-type="{{ acc.room_type }}">
+                <td>
+                  <img src="{{ url_for('static', filename=acc.images[0]) if acc.images else 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' }}" 
+                       class="accommodation-img shadow-sm" 
+                       alt="{{ acc.title }}"
+                       data-bs-toggle="tooltip" 
+                       data-bs-title="Click to view larger">
+                </td>
+                <td>
+                  <div class="d-flex flex-column">
+                    <strong class="text-dark mb-1">{{ acc.title }}</strong>
+                    <small class="text-muted">
+                      <i class="fas fa-door-open me-1"></i>{{ acc.room_type|title }} • 
+                      <i class="fas fa-star me-1 text-warning"></i>{{ "%.1f"|format(acc.average_rating) }}
+                    </small>
+                    <div class="mt-1">
+                      {% if acc.amenities %}
+                        {% set amenities = acc.amenities[:3] %}
+                        {% for amenity in amenities %}
+                          <span class="badge bg-light text-dark border me-1 mb-1" style="font-size: 0.7rem;">
+                            <i class="fas fa-check text-success me-1"></i>{{ amenity|title }}
+                          </span>
+                        {% endfor %}
+                        {% if acc.amenities|length > 3 %}
+                          <span class="badge bg-light text-muted border" style="font-size: 0.7rem;">
+                            +{{ acc.amenities|length - 3 }} more
+                          </span>
+                        {% endif %}
+                      {% endif %}
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                    <span>{{ acc.location }}</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="d-flex flex-column">
+                    <strong class="text-primary fs-5">R{{ "{:,.2f}".format(acc.price_per_month) }}</strong>
+                    <small class="text-muted">per month</small>
+                  </div>
+                </td>
+                <td>
+                  <div class="d-flex flex-column">
+                    <div class="d-flex align-items-center">
+                      <div class="progress flex-grow-1 me-2" style="height: 6px;">
+                        {% set occupancy_percentage = (acc.current_occupancy / acc.capacity * 100) if acc.capacity > 0 else 0 %}
+                        <div class="progress-bar {% if occupancy_percentage >= 80 %}bg-danger{% elif occupancy_percentage >= 50 %}bg-warning{% else %}bg-success{% endif %}" 
+                             role="progressbar" 
+                             style="width: {{ occupancy_percentage }}%;" 
+                             aria-valuenow="{{ occupancy_percentage }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                        </div>
+                      </div>
+                      <span class="fw-bold">{{ occupancy_percentage|int }}%</span>
+                    </div>
+                    <small class="text-muted">{{ acc.current_occupancy }} of {{ acc.capacity }} occupied</small>
+                  </div>
+                </td>
+                <td>
+                  {% if acc.is_available %}
+                    <span class="status-badge status-available">
+                      <i class="fas fa-check-circle me-1"></i>Available
+                    </span>
+                  {% else %}
+                    <span class="status-badge status-fully_occupied">
+                      <i class="fas fa-times-circle me-1"></i>Fully Occupied
+                    </span>
+                  {% endif %}
+                </td>
+                <td class="text-center">
+                  <div class="action-buttons justify-content-center">
+                    <a href="{{ url_for('main.accommodation_detail', id=acc.id) }}" 
+                       class="btn-icon btn-outline-primary border" 
+                       data-bs-toggle="tooltip" 
+                       data-bs-title="View Public Page">
+                      <i class="fas fa-eye"></i>
+                    </a>
+                    <a href="{{ url_for('admin.edit_accommodation', id=acc.id) }}" 
+                       class="btn-icon btn-edit" 
+                       data-bs-toggle="tooltip" 
+                       data-bs-title="Edit Accommodation">
+                      <i class="fas fa-edit"></i>
+                    </a>
+                    <form action="{{ url_for('admin.delete_accommodation', id=acc.id) }}" 
+                          method="POST" 
+                          class="d-inline"
+                          onsubmit="return confirmDelete(this);">
+                      <button type="submit" 
+                              class="btn-icon btn-delete" 
+                              data-bs-toggle="tooltip" 
+                              data-bs-title="Delete Accommodation">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-state-icon">
+          <i class="fas fa-building"></i>
+        </div>
+        <h4 class="text-muted mb-3">No Accommodations Found</h4>
+        <p class="text-muted mb-4">Get started by adding your first accommodation listing</p>
+        <a href="{{ url_for('admin.add_accommodation') }}" class="action-btn">
+          <i class="fas fa-plus-circle"></i>
+          Add Your First Accommodation
+        </a>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Statistics Footer -->
+  {% if accommodations %}
+    <div class="mt-4 text-center text-muted">
+      <small>
+        <i class="fas fa-info-circle me-1"></i>
+        Showing {{ accommodations|length }} accommodation{{ 's' if accommodations|length != 1 else '' }} • 
+        Last updated: {{ accommodations[0].updated_at.strftime('%Y-%m-%d %H:%M') if accommodations else 'N/A' }}
+      </small>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+    
+    // Filter functionality
+    const searchInput = document.getElementById('searchInput')
+    const statusFilter = document.getElementById('statusFilter')
+    const roomTypeFilter = document.getElementById('roomTypeFilter')
+    const tableRows = document.querySelectorAll('#accommodationsTable tbody tr')
+    
+    function filterTable() {
+      const searchTerm = searchInput.value.toLowerCase()
+      const statusValue = statusFilter.value
+      const roomTypeValue = roomTypeFilter.value
+      
+      tableRows.forEach(row => {
+        const title = row.querySelector('td:nth-child(2) strong').textContent.toLowerCase()
+        const status = row.getAttribute('data-status')
+        const roomType = row.getAttribute('data-room-type')
+        
+        const matchesSearch = title.includes(searchTerm)
+        const matchesStatus = !statusValue || status === statusValue
+        const matchesRoomType = !roomTypeValue || roomType === roomTypeValue
+        
+        row.style.display = (matchesSearch && matchesStatus && matchesRoomType) ? '' : 'none'
+      })
+    }
+    
+    searchInput.addEventListener('input', filterTable)
+    statusFilter.addEventListener('change', filterTable)
+    roomTypeFilter.addEventListener('change', filterTable)
+    
+    // Delete confirmation with sweet alert style
+    function confirmDelete(form) {
+      const accTitle = form.closest('tr').querySelector('td:nth-child(2) strong').textContent
+      
+      if (confirm(`Are you sure you want to delete "${accTitle}"?\n\nThis action cannot be undone.`)) {
+        // Show loading state
+        const deleteBtn = form.querySelector('button[type="submit"]')
+        const originalHTML = deleteBtn.innerHTML
+        deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'
+        deleteBtn.disabled = true
+        
+        return true
+      }
+      return false
+    }
+    
+    // Image preview modal
+    document.querySelectorAll('.accommodation-img').forEach(img => {
+      img.addEventListener('click', function() {
+        const src = this.src
+        const modalHTML = `
+          <div class="modal fade" id="imageModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content border-0">
+                <div class="modal-body p-0">
+                  <img src="${src}" class="img-fluid rounded" style="max-height: 80vh; object-fit: contain;">
+                </div>
+                <div class="modal-footer border-0">
+                  <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `
+        
+        // Remove existing modal
+        const existingModal = document.getElementById('imageModal')
+        if (existingModal) existingModal.remove()
+        
+        // Add new modal and show it
+        document.body.insertAdjacentHTML('beforeend', modalHTML)
+        const modal = new bootstrap.Modal(document.getElementById('imageModal'))
+        modal.show()
+      })
+    })
+    
+    // Add some animation to table rows on load
+    tableRows.forEach((row, index) => {
+      row.style.opacity = '0'
+      row.style.transform = 'translateX(-20px)'
+      
+      setTimeout(() => {
+        row.style.transition = 'all 0.3s ease'
+        row.style.opacity = '1'
+        row.style.transform = 'translateX(0)'
+      }, index * 50)
+    })
+  })
+</script>
+{% endblock %}
